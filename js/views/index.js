@@ -2,6 +2,7 @@ import { createNeck } from './neck.js';
 import marimba from './marimba.js';
 import campanas from './campanas.js';
 import peine from './peine.js';
+import pads from './pads.js';
 
 // vista de cada timbre. lo que no está aquí usa el teclado de piano, que se arma con elementos html
 const VIEWS = {
@@ -11,7 +12,8 @@ const VIEWS = {
   cuerdas: createNeck({ strings: [76, 69, 62, 55], steps: 14, fretted: false, thickness: [1.5, 2, 3, 4] }),
   marimba,
   campanas,
-  caja: peine
+  caja: peine,
+  juguete: pads
 };
 
 export function viewFor(timbre) {
