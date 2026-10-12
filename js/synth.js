@@ -8,6 +8,30 @@ function ring(m, dur) {
   return Math.max(0.5, Math.min(2.2, 2.6 - (m - 48) * 0.03)) + dur * 0.4;
 }
 
+// vibrato: un oscilador lento que mueve la frecuencia de osc, desde start hasta end
+function vibrato(ctx, osc, depthHz, start, end, rate) {
+  const lfo = ctx.createOscillator(), amt = ctx.createGain();
+  lfo.type = 'sine';
+  lfo.frequency.value = rate;
+  amt.gain.value = depthHz;
+  lfo.connect(amt); amt.connect(osc.frequency);
+  lfo.start(start); lfo.stop(end);
+}
+
+// soplido: un golpe corto de ruido filtrado alrededor de hz
+function breath(ctx, hz, when, len, dest) {
+  const n = Math.max(1, Math.floor(ctx.sampleRate * len));
+  const buf = ctx.createBuffer(1, n, ctx.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+  const src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain();
+  src.buffer = buf;
+  bp.type = 'bandpass';
+  bp.frequency.value = Math.min(8000, hz);
+  g.gain.value = 0.12;
+  src.connect(bp); bp.connect(g); g.connect(dest);
+  src.start(when); src.stop(when + len);
+}
+
 const timbres = {
   piano: { label: 'piano', play(ctx, m, when, dur, dest) {
     const f = midiToHz(m), len = ring(m, dur);
@@ -122,6 +146,28 @@ const timbres = {
       o.connect(og); og.connect(g);
       o.start(when); o.stop(when + len + 0.05);
     }
+  } },
+
+  // flauta: seno con vibrato tardío y un soplido corto al atacar
+  flauta: { label: 'flauta', play(ctx, m, when, dur, dest) {
+    const f = midiToHz(m), len = Math.max(0.2, dur);
+    const g = ctx.createGain();
+    g.connect(dest);
+    g.gain.setValueAtTime(0.0001, when);
+    g.gain.exponentialRampToValueAtTime(0.3, when + 0.06);
+    g.gain.setValueAtTime(0.3, when + len);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + len + 0.14);
+    for (const [h, a] of [[1, 1], [2, 0.14]]) {
+      if (f * h > 12000) continue;
+      const o = ctx.createOscillator(), og = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = f * h;
+      og.gain.value = a;
+      o.connect(og); og.connect(g);
+      vibrato(ctx, o, f * h * 0.006, when + 0.15, when + len + 0.16, 5.4);
+      o.start(when); o.stop(when + len + 0.16);
+    }
+    breath(ctx, f * 2, when, 0.12, g);
   } }
 };
 
