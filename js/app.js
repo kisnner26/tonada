@@ -4,6 +4,7 @@ import { drawRoll, fit } from './roll.js';
 import { audioContext, createPlayer, preview } from './player.js';
 import { toMidi } from './midi.js';
 import { TIMBRES } from './synth.js';
+import { viewFor } from './views/index.js';
 
 const $ = id => document.getElementById(id);
 const MAX_SECONDS = 300;
@@ -51,9 +52,64 @@ function facts() {
 
 const shift = () => +$('oct').value * 12;
 
-function redraw(t = 0) {
-  drawRoll($('roll'), kb, state.notes, t, { shift: shift(), emptyText: state.notes.length ? '' : 'sin melodía todavía' });
+// cada instrumento tiene su vista; null es el teclado de piano, que usa elementos html
+let view = null;
+const pressed = new Map(); // nota -> hasta cuándo se ve pulsada con el ratón o el dedo
+
+function livePressed() {
+  const now = performance.now();
+  for (const [m, until] of pressed) if (until < now) pressed.delete(m);
+  return [...pressed.keys()];
 }
+
+function redraw(t = 0) {
+  const canvas = $('roll');
+  if (view) {
+    const g = canvas.getContext('2d');
+    g.clearRect(0, 0, canvas.width, canvas.height);
+    view.draw(g, canvas.width, canvas.height, { notes: state.notes, t, shift: shift(), pressed: livePressed() });
+    return;
+  }
+  drawRoll(canvas, kb, state.notes, t, { shift: shift(), emptyText: state.notes.length ? '' : 'sin melodía todavía' });
+}
+
+// posición horizontal de una nota en la vista actual, para centrar el desplazamiento
+const xOf = m => (view ? view.xOf(m, $('roll').width, $('roll').height) : kb.x(fit(m)));
+
+// acomoda el escenario al instrumento elegido
+function layoutStage() {
+  const canvas = $('roll');
+  if (view) {
+    const { w, h } = view.size($('scroll').clientWidth);
+    $('keys').hidden = true;
+    canvas.width = w;
+    canvas.height = h;
+    $('stage').style.width = w + 'px';
+  } else {
+    $('keys').hidden = false;
+    canvas.height = 200;
+    kb.layout();
+  }
+}
+
+function applyView() {
+  const id = $('timbre').value;
+  view = viewFor(id);
+  $('viewTitle').textContent = TIMBRES.find(t => t.id === id).label;
+  layoutStage();
+  redraw(player.isPlaying() ? player.now() : 0);
+}
+
+$('roll').addEventListener('pointerdown', e => {
+  if (!view) return;
+  const r = e.currentTarget.getBoundingClientRect();
+  const m = view.hit(e.clientX - r.left, e.clientY - r.top, $('roll').width, $('roll').height);
+  if (m == null) return;
+  preview(m, $('timbre').value);
+  pressed.set(m, performance.now() + 260);
+  redraw(player.isPlaying() ? player.now() : 0);
+  setTimeout(() => redraw(player.isPlaying() ? player.now() : 0), 280);
+});
 
 // reproducción
 let raf = 0, follow = 0;
@@ -77,7 +133,7 @@ function frame() {
   $('time').textContent = fmt(t) + ' / ' + fmt(state.duration);
   // el desplazamiento sigue a las notas que están por sonar
   let sum = 0, c = 0;
-  for (const n of state.notes) if (n.t < t + 0.8 && n.t + n.d > t) { sum += kb.x(fit(n.m + shift())); c++; }
+  for (const n of state.notes) if (n.t < t + 0.8 && n.t + n.d > t) { sum += xOf(n.m + shift()); c++; }
   if (c) {
     const sc = $('scroll');
     follow += (sum / c - sc.clientWidth / 2 - follow) * 0.08;
@@ -109,7 +165,7 @@ function analyze() {
   // centra el teclado en el registro de la melodía
   if (notes.length) {
     const mid = notes.map(n => n.m).sort((a, b) => a - b)[Math.floor(notes.length / 2)];
-    $('scroll').scrollLeft = Math.max(0, kb.x(fit(mid + shift())) - $('scroll').clientWidth / 2);
+    $('scroll').scrollLeft = Math.max(0, xOf(mid + shift()) - $('scroll').clientWidth / 2);
     redraw();
   }
   $('play').disabled = !notes.length;
@@ -185,10 +241,10 @@ $('gate').addEventListener('input', reanalyze);
 $('minms').addEventListener('input', reanalyze);
 
 facts();
-redraw();
+applyView();
 
-// al cambiar el tamaño el canvas se reinicia: se vuelve a pintar
-addEventListener('resize', () => redraw(player.isPlaying() ? player.now() : 0));
+// al cambiar el tamaño el canvas se reinicia: se acomoda y se vuelve a pintar
+addEventListener('resize', () => { layoutStage(); redraw(player.isPlaying() ? player.now() : 0); });
 
-// al cambiar de timbre suena una nota de muestra
-$('timbre').addEventListener('change', () => preview(72, $('timbre').value));
+// al cambiar de timbre cambia el instrumento en pantalla y suena una nota de muestra
+$('timbre').addEventListener('change', () => { applyView(); preview(72, $('timbre').value); });
