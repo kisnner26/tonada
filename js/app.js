@@ -1,14 +1,17 @@
 import { transcribe, mixToMono, noteName } from './pitch.js';
 import { createKeyboard } from './keyboard.js';
-import { drawRoll } from './roll.js';
-import { audioContext } from './player.js';
+import { drawRoll, fit } from './roll.js';
+import { audioContext, createPlayer, preview } from './player.js';
 
 const $ = id => document.getElementById(id);
 const MAX_SECONDS = 300;
 
 const state = { samples: null, sr: 44100, name: '', notes: [], duration: 0 };
 
-const kb = createKeyboard($('stage'), $('keys'), $('roll'), () => {});
+const kb = createKeyboard($('stage'), $('keys'), $('roll'), m => {
+  preview(m, $('timbre').value);
+  kb.flash(m, 220);
+});
 
 const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
 
@@ -41,9 +44,54 @@ function facts() {
   add(fmt(state.duration));
 }
 
-function redraw() {
-  drawRoll($('roll'), kb, state.notes, 0, { emptyText: state.notes.length ? '' : 'sin melodía todavía' });
+const shift = () => +$('oct').value * 12;
+
+function redraw(t = 0) {
+  drawRoll($('roll'), kb, state.notes, t, { shift: shift(), emptyText: state.notes.length ? '' : 'sin melodía todavía' });
 }
+
+// reproducción
+let raf = 0, follow = 0;
+const player = createPlayer({
+  onNote: (m, ms) => kb.flash(m, ms),
+  onEnd: () => {
+    cancelAnimationFrame(raf);
+    kb.clear();
+    $('play').textContent = 'reproducir';
+    $('bar').style.width = '0';
+    $('time').textContent = '0:00 / ' + fmt(state.duration);
+    redraw();
+  }
+});
+
+function frame() {
+  if (!player.isPlaying()) return;
+  const t = player.now();
+  redraw(t);
+  $('bar').style.width = Math.min(100, (t / state.duration) * 100) + '%';
+  $('time').textContent = fmt(t) + ' / ' + fmt(state.duration);
+  // el desplazamiento sigue a las notas que están por sonar
+  let sum = 0, c = 0;
+  for (const n of state.notes) if (n.t < t + 0.8 && n.t + n.d > t) { sum += kb.x(fit(n.m + shift())); c++; }
+  if (c) {
+    const sc = $('scroll');
+    follow += (sum / c - sc.clientWidth / 2 - follow) * 0.08;
+    sc.scrollLeft = follow;
+  }
+  raf = requestAnimationFrame(frame);
+}
+
+function togglePlay() {
+  if (player.isPlaying()) return player.stop();
+  if (!state.notes.length) return;
+  player.start(state.notes, state.duration, { rate: +$('rate').value, shift: shift(), timbre: $('timbre').value });
+  $('play').textContent = 'detener';
+  follow = $('scroll').scrollLeft;
+  frame();
+}
+$('play').addEventListener('click', togglePlay);
+$('oct').addEventListener('change', () => { player.stop(); redraw(); });
+
 
 // analiza las muestras guardadas con los ajustes actuales
 function analyze() {
@@ -53,6 +101,8 @@ function analyze() {
   state.duration = duration;
   facts();
   redraw();
+  $('play').disabled = !notes.length;
+  $('time').textContent = '0:00 / ' + fmt(duration);
   setStatus(state.name || 'listo', notes.length > 0);
   say(notes.length ? state.name + ' · ' + notes.length + ' notas' : 'no encontré notas en ' + state.name, !notes.length);
 }
