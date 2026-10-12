@@ -3,6 +3,7 @@ import marimba from './marimba.js';
 import campanas from './campanas.js';
 import peine from './peine.js';
 import pads from './pads.js';
+import panflauta from './panflauta.js';
 
 // vista de cada timbre. lo que no está aquí usa el teclado de piano, que se arma con elementos html
 const VIEWS = {
@@ -13,7 +14,8 @@ const VIEWS = {
   marimba,
   campanas,
   caja: peine,
-  juguete: pads
+  juguete: pads,
+  flauta: panflauta
 };
 
 export function viewFor(timbre) {
