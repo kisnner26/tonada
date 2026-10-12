@@ -191,6 +191,25 @@ const timbres = {
       vibrato(ctx, o, f * 0.005, when + 0.2, when + len + 0.24, 5.2);
       o.start(when); o.stop(when + len + 0.24);
     }
+  } },
+
+  // campanas: parciales inarmónicos de una campana, con caída larga
+  campanas: { label: 'campanas', play(ctx, m, when, dur, dest) {
+    const f = midiToHz(m), len = 1.2 + 2.6 * (1 - Math.min(1, Math.max(0, (m - 36) / 72)));
+    const g = ctx.createGain();
+    g.connect(dest);
+    g.gain.setValueAtTime(0.0001, when);
+    g.gain.exponentialRampToValueAtTime(0.4, when + 0.003);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + len);
+    for (const [h, a] of [[0.5, 0.45], [1, 1], [1.2, 0.5], [1.5, 0.28], [2, 0.4], [2.5, 0.2], [3, 0.14]]) {
+      if (f * h > 12000) continue;
+      const o = ctx.createOscillator(), og = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = f * h;
+      og.gain.value = a * 0.3;
+      o.connect(og); og.connect(g);
+      o.start(when); o.stop(when + len + 0.05);
+    }
   } }
 };
 
