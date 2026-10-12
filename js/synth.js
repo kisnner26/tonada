@@ -210,6 +210,30 @@ const timbres = {
       o.connect(og); og.connect(g);
       o.start(when); o.stop(when + len + 0.05);
     }
+  } },
+
+  // sintetizador: dos sierras desafinadas con un filtro resonante que se abre y se cierra
+  sintetizador: { label: 'sintetizador', play(ctx, m, when, dur, dest) {
+    const f = midiToHz(m), len = Math.max(0.15, dur);
+    const lp = ctx.createBiquadFilter(), g = ctx.createGain();
+    lp.type = 'lowpass';
+    lp.Q.value = 6;
+    lp.frequency.setValueAtTime(Math.min(9000, f * 8), when);
+    lp.frequency.exponentialRampToValueAtTime(Math.max(300, f * 2), when + 0.25);
+    lp.connect(g);
+    g.connect(dest);
+    g.gain.setValueAtTime(0.0001, when);
+    g.gain.exponentialRampToValueAtTime(0.2, when + 0.01);
+    g.gain.setValueAtTime(0.2, when + len);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + len + 0.16);
+    for (const cents of [-12, 12]) {
+      const o = ctx.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.value = f;
+      o.detune.value = cents;
+      o.connect(lp);
+      o.start(when); o.stop(when + len + 0.2);
+    }
   } }
 };
 
