@@ -3,11 +3,15 @@ import { createKeyboard } from './keyboard.js';
 import { drawRoll, fit } from './roll.js';
 import { audioContext, createPlayer, preview } from './player.js';
 import { toMidi } from './midi.js';
+import { TIMBRES } from './synth.js';
 
 const $ = id => document.getElementById(id);
 const MAX_SECONDS = 300;
 
 const state = { samples: null, sr: 44100, name: '', notes: [], duration: 0 };
+
+// el selector se arma con los timbres que ofrece el sintetizador
+for (const t of TIMBRES) $('timbre').add(new Option(t.label, t.id));
 
 const kb = createKeyboard($('stage'), $('keys'), $('roll'), m => {
   preview(m, $('timbre').value);

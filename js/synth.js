@@ -9,7 +9,7 @@ function ring(m, dur) {
 }
 
 const timbres = {
-  piano(ctx, m, when, dur, dest) {
+  piano: { label: 'piano', play(ctx, m, when, dur, dest) {
     const f = midiToHz(m), len = ring(m, dur);
     const g = ctx.createGain();
     g.connect(dest);
@@ -26,10 +26,10 @@ const timbres = {
       o.connect(og); og.connect(g);
       o.start(when); o.stop(when + len + 0.05);
     }
-  },
+  } },
 
   // zumbador de juguete: onda cuadrada sin caída, como el chip de un peluche musical
-  juguete(ctx, m, when, dur, dest) {
+  juguete: { label: 'juguete', play(ctx, m, when, dur, dest) {
     const f = midiToHz(m), len = Math.max(0.08, dur);
     const g = ctx.createGain(), lp = ctx.createBiquadFilter();
     lp.type = 'lowpass';
@@ -45,10 +45,10 @@ const timbres = {
     o.frequency.value = f;
     o.connect(g);
     o.start(when); o.stop(when + len + 0.05);
-  },
+  } },
 
   // caja de música: láminas metálicas con parciales inarmónicos
-  caja(ctx, m, when, dur, dest) {
+  caja: { label: 'caja de música', play(ctx, m, when, dur, dest) {
     const f = midiToHz(m), len = 1.4 + dur * 0.3;
     const g = ctx.createGain();
     g.connect(dest);
@@ -64,11 +64,11 @@ const timbres = {
       o.connect(og); og.connect(g);
       o.start(when); o.stop(when + len + 0.05);
     }
-  }
+  } }
 };
 
-export const TIMBRES = Object.keys(timbres);
+export const TIMBRES = Object.entries(timbres).map(([id, t]) => ({ id, label: t.label }));
 
 export function playNote(ctx, timbre, m, when, dur, dest) {
-  (timbres[timbre] || timbres.piano)(ctx, m, when, dur, dest);
+  (timbres[timbre] || timbres.piano).play(ctx, m, when, dur, dest);
 }
