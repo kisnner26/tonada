@@ -8,7 +8,7 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
-.fact.hot { background: var(--orange); color: var(--ink-d); }
+.fact.hot { background: var(--hot); color: var(--on-hot); }
 .fact.empty { background: transparent; color: var(--mute); padding-left: 0; letter-spacing: 0.06em; text-transform: none; font-size: 0.78rem; }
 
 .scroll {
@@ -46,5 +46,5 @@
   border-top: 0;
   box-shadow: 2px 3px 0 var(--ink-d);
 }
-.key.on.w { background: var(--orange); color: var(--ink-d); }
-.key.on.b { background: var(--orange-d); }
+.key.on.w { background: var(--hot); color: var(--on-hot); }
+.key.on.b { background: var(--hot-d); }

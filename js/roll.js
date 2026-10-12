@@ -26,7 +26,7 @@ export function drawRoll(canvas, kb, notes, t, { shift = 0, emptyText = '' } = {
     return;
   }
 
-  const ink = css('--ink'), steel = css('--steel'), hot = css('--orange');
+  const ink = css('--ink'), steel = css('--mid'), hot = css('--hot');
   for (const n of notes) {
     const m = fit(n.m + shift);
     const h = Math.max(7, (n.d / LOOK) * H);
