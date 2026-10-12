@@ -36,11 +36,15 @@ export default {
         g.fillText(noteName(m), p.x + p.w / 2, p.y + p.h + 18);
       }
     }
-    // dos cintas que atan los tubos
-    for (const k of [0.16, 0.34]) {
-      const y = top + longest * k * 1.1;
-      g.fillStyle = pal.ink;
-      g.fillRect(pipe(lo).x - 6, y, pipe(hi).x + pipe(hi).w - pipe(lo).x + 12, 7);
+    // dos cintas que atan los tubos, solo donde el tubo llega hasta ellas
+    const { dx } = this.geo(w);
+    for (const y of [top + 48, top + 100]) {
+      for (let m = lo; m <= hi; m++) {
+        const p = pipe(m);
+        if (p.h < y - top + 10) continue;
+        g.fillStyle = pal.ink;
+        g.fillRect(p.x - dx * 0.15, y, dx, 6);
+      }
     }
     g.textAlign = 'start';
   },
