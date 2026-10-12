@@ -189,3 +189,6 @@ redraw();
 
 // al cambiar el tamaño el canvas se reinicia: se vuelve a pintar
 addEventListener('resize', () => redraw(player.isPlaying() ? player.now() : 0));
+
+// al cambiar de timbre suena una nota de muestra
+$('timbre').addEventListener('change', () => preview(72, $('timbre').value));
