@@ -78,6 +78,17 @@ await run("document.getElementById('play').click()");
 await sleep(3700);
 await save('piano.png', { clip: { ...(await rect('.card.piano')), scale: 1 } });
 
+// modo guiado: la nota esperada pintada de negro, después de acertar las primeras
+const tecla = code => run(`window.dispatchEvent(new KeyboardEvent('keydown', { code: '${code}', bubbles: true }))`);
+await run("document.getElementById('play').textContent === 'detener' && document.getElementById('play').click()");
+await sleep(300);
+await run("document.getElementById('guideBtn').click()");
+for (const c of ['KeyC', 'KeyC', 'KeyV']) { await tecla(c); await sleep(250); }
+await sleep(900);
+const a1 = await rect('.guide'), a2 = await rect('.card.piano');
+await save('guiado.png', { clip: { x: a2.x, y: a1.y, width: a2.width, height: a2.y + a2.height - a1.y, scale: 1 } });
+await run("document.getElementById('guideBtn').click()");
+
 // un cuadro por instrumento con vista propia, mientras suena
 await send('Emulation.setDeviceMetricsOverride', { width: 1100, height: 2600, deviceScaleFactor: 2, mobile: false });
 await run("document.getElementById('play').textContent === 'detener' && document.getElementById('play').click()");
