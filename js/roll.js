@@ -47,7 +47,7 @@ export function drawRoll(canvas, kb, notes, t, { shift = 0, emptyText = '' } = {
 
 // baldosa de rayas diagonales: la trama de las notas que todavía no suenan
 let tile = null, tileKey = '';
-function hatchTile(ink, paper) {
+export function hatchTile(ink, paper) {
   if (tile && tileKey === ink + paper) return tile;
   const c = document.createElement('canvas');
   c.width = c.height = 6;
