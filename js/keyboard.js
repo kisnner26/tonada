@@ -55,6 +55,14 @@ export function createKeyboard(stage, keysEl, canvas, onPress) {
     }
   }
 
+  // marca la tecla que toca el modo guiado (null la quita)
+  let targeted = null;
+  function target(m) {
+    targeted?.classList.remove('target');
+    targeted = m == null ? null : els[m] || null;
+    targeted?.classList.add('target');
+  }
+
   function clear() { for (const el of Object.values(els)) el.classList.remove('on'); }
 
   // con ratón o lápiz se puede arrastrar sobre las teclas para hacer un glissando; con el dedo se desliza la página
@@ -76,5 +84,5 @@ export function createKeyboard(stage, keysEl, canvas, onPress) {
 
   layout();
   addEventListener('resize', layout);
-  return { x, w, flash, clear, layout, setHints, whites: () => whites };
+  return { x, w, flash, clear, layout, setHints, target, whites: () => whites };
 }
