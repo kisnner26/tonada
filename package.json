@@ -5,7 +5,7 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "test": "node tools/test_pitch.mjs && node tools/test_midi.mjs",
+    "test": "node tools/test_pitch.mjs && node tools/test_midi.mjs && node tools/test_synth.mjs",
     "start": "python3 -m http.server 8080"
   }
 }
