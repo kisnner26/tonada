@@ -176,3 +176,6 @@ $('minms').addEventListener('input', reanalyze);
 
 facts();
 redraw();
+
+// al cambiar el tamaño el canvas se reinicia: se vuelve a pintar
+addEventListener('resize', () => redraw(player.isPlaying() ? player.now() : 0));
