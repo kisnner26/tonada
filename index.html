@@ -67,6 +67,18 @@
         <input id="minms" type="range" min="30" max="400" step="10" value="90">
       </label>
     </div>
+    <div class="guide">
+      <div class="row">
+        <button class="btn" id="guideBtn" type="button" aria-pressed="false" disabled>modo guiado: no</button>
+        <label class="check" for="anykey"><input id="anykey" type="checkbox"><span class="box" aria-hidden="true"></span>cualquier tecla toca la nota</label>
+        <button class="btn" id="guideReset" type="button" disabled>reiniciar</button>
+      </div>
+      <p class="msg">en el modo guiado la nota que toca ahora se pinta de negro y la melodía espera a que la toques, en orden, de principio a fin. vale la misma nota en cualquier octava.</p>
+      <p class="guide-info" id="guideInfo" role="status" hidden>
+        <span class="fact hot" id="guideCount">0 / 0</span>
+        <span id="guideHint"></span>
+      </p>
+    </div>
   </section>
 
   <section class="card piano">

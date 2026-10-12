@@ -76,3 +76,9 @@ kbd {
   font: 700 0.7rem/1 var(--font-mono);
   text-align: center;
 }
+
+/* tecla que toca el modo guiado: la blanca se pinta de negro y la negra queda en blanco con filo grueso */
+.key.target.w { background: var(--ink); color: var(--paper-l); }
+.key.target.w .hint { color: var(--paper-l); }
+.key.target.b { background: var(--paper-l); border: 3px solid var(--ink); box-shadow: inset 0 0 0 3px var(--paper-l), inset 0 0 0 6px var(--ink), 2px 3px 0 var(--ink-d); }
+.key.target.b .hint { color: var(--ink); }
