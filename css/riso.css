@@ -44,7 +44,7 @@ body {
 
 button, select, input { font: inherit; color: inherit; }
 
-:focus-visible { outline: 3px solid var(--hot); outline-offset: 3px; }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; box-shadow: 0 0 0 6px var(--paper-l); }
 
 .top {
   max-width: 980px;
@@ -81,7 +81,7 @@ button, select, input { font: inherit; color: inherit; }
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
-.status .dot { width: 9px; height: 9px; background: var(--mid); border: 2px solid var(--ink); }
+.status .dot { width: 9px; height: 9px; background: var(--paper-l); border: 2px solid var(--ink); }
 .status.live .dot { background: var(--hot); }
 
 main {
@@ -186,7 +186,7 @@ h1 b { background: var(--ink); color: var(--paper-l); font-weight: 800; padding:
 
 .row { display: flex; flex-wrap: wrap; gap: 14px; }
 .msg { margin: 0; min-height: 1.4em; font: 500 0.78rem/1.5 var(--font-mono); letter-spacing: 0.03em; color: var(--mute); }
-.msg.err { color: var(--hot-d); }
+.msg.err { font-weight: 700; text-decoration: underline wavy; text-underline-offset: 4px; }
 
 /* botones */
 .btn {
@@ -204,7 +204,14 @@ h1 b { background: var(--ink); color: var(--paper-l); font-weight: 800; padding:
 .btn:active:not(:disabled) { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--ink); }
 .btn.hot { background: var(--hot); color: var(--on-hot); }
 .btn.big { padding: 14px 26px; font-size: 0.85rem; min-width: 150px; }
-.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn:disabled {
+  cursor: not-allowed;
+  border-style: dashed;
+  box-shadow: none;
+  background-color: var(--paper-l);
+  color: var(--ink);
+  background-image: repeating-linear-gradient(135deg, transparent 0 4px, var(--ink) 4px 5px);
+}
 
 /* controles */
 .transport { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; }
@@ -221,7 +228,7 @@ h1 b { background: var(--ink); color: var(--paper-l); font-weight: 800; padding:
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
-.field output { float: right; color: var(--hot-d); font-weight: 600; letter-spacing: 0.04em; }
+.field output { float: right; font-weight: 700; letter-spacing: 0.04em; }
 select {
   appearance: none;
   background: var(--paper-p) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23000' stroke-width='2.5'/%3E%3C/svg%3E") no-repeat right 10px center;
@@ -237,12 +244,12 @@ select {
 input[type='range'] { appearance: none; width: 100%; height: 22px; background: transparent; cursor: pointer; }
 input[type='range']::-webkit-slider-runnable-track { height: 8px; background: var(--paper-p); border: 3px solid var(--ink); }
 input[type='range']::-moz-range-track { height: 8px; background: var(--paper-p); border: 3px solid var(--ink); }
-input[type='range']::-webkit-slider-thumb { appearance: none; width: 18px; height: 22px; margin-top: -9px; background: var(--hot); border: 3px solid var(--ink); border-radius: 0; box-shadow: 2px 2px 0 var(--ink); }
+input[type='range']::-webkit-slider-thumb { appearance: none; width: 18px; height: 22px; margin-top: -9px; background: var(--hot); border: 3px solid var(--ink); border-radius: 0; box-shadow: inset 0 0 0 2px var(--paper-l), 2px 2px 0 var(--ink); }
 input[type='range']::-moz-range-thumb { width: 12px; height: 16px; background: var(--hot); border: 3px solid var(--ink); border-radius: 0; box-shadow: 2px 2px 0 var(--ink); }
 
 /* zona de arrastre */
 .drop { border-style: dashed; transition: background-color 0.12s; }
-.drop.over { background-color: var(--paper-p); box-shadow: 8px 8px 0 var(--hot-d); }
+.drop.over { border-style: solid; transform: translate(-3px, -3px); box-shadow: 14px 14px 0 var(--ink-d); }
 .drop-text { margin: 0; font-family: var(--font-hand); font-weight: 600; font-size: 1.6rem; line-height: 1.1; }
 
 .foot {
@@ -257,7 +264,7 @@ input[type='range']::-moz-range-thumb { width: 12px; height: 16px; background: v
   text-transform: uppercase;
   color: var(--paper);
 }
-.foot a { color: var(--hot); text-underline-offset: 3px; }
+.foot a { color: var(--paper-l); text-underline-offset: 3px; }
 
 @media (max-width: 520px) {
   .hero::before { display: none; }

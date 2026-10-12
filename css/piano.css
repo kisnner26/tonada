@@ -1,15 +1,16 @@
 /* teclado y rollo de notas, en la misma tinta riso */
 .facts { display: flex; flex-wrap: wrap; gap: 10px; min-height: 30px; }
 .fact {
-  background: var(--ink);
-  color: var(--paper-l);
+  background: var(--paper-l);
+  color: var(--ink);
+  border: 2px solid var(--ink);
   padding: 7px 10px;
   font: 500 0.68rem/1 var(--font-mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 .fact.hot { background: var(--hot); color: var(--on-hot); }
-.fact.empty { background: transparent; color: var(--mute); padding-left: 0; letter-spacing: 0.06em; text-transform: none; font-size: 0.78rem; }
+.fact.empty { background: transparent; border-color: transparent; color: var(--mute); padding-left: 0; letter-spacing: 0.06em; text-transform: none; font-size: 0.78rem; }
 
 .scroll {
   overflow-x: auto;
@@ -47,4 +48,4 @@
   box-shadow: 2px 3px 0 var(--ink-d);
 }
 .key.on.w { background: var(--hot); color: var(--on-hot); }
-.key.on.b { background: var(--hot-d); }
+.key.on.b { background: var(--paper-l); }
