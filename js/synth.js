@@ -84,6 +84,25 @@ const timbres = {
       o.connect(og); og.connect(g);
       o.start(when); o.stop(when + len + 0.12);
     }
+  } },
+
+  // guitarra: diente de sierra con un filtro que se cierra rápido, como una cuerda pulsada
+  guitarra: { label: 'guitarra', play(ctx, m, when, dur, dest) {
+    const f = midiToHz(m), len = 0.9 + dur * 0.3;
+    const lp = ctx.createBiquadFilter(), g = ctx.createGain();
+    lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(Math.min(9000, f * 7), when);
+    lp.frequency.exponentialRampToValueAtTime(Math.max(300, f * 1.4), when + 0.3);
+    lp.connect(g);
+    g.connect(dest);
+    g.gain.setValueAtTime(0.0001, when);
+    g.gain.exponentialRampToValueAtTime(0.32, when + 0.003);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + len);
+    const o = ctx.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.value = f;
+    o.connect(lp);
+    o.start(when); o.stop(when + len + 0.05);
   } }
 };
 
