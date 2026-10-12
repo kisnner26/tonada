@@ -5,8 +5,8 @@ import { TIMBRES, playNote } from '../js/synth.js';
 function makeCtx() {
   const nodes = [];
   const errors = [];
-  const param = (v = 0) => {
-    const p = { value: v, last: v };
+  const param = (v = 0, owner = null) => {
+    const p = { value: v, last: v, owner };
     const at = t => { if (!Number.isFinite(t) || t < 0) errors.push('tiempo inválido ' + t); };
     p.setValueAtTime = (x, t) => { at(t); p.last = x; };
     p.linearRampToValueAtTime = (x, t) => { at(t); p.last = x; };
@@ -27,21 +27,22 @@ function makeCtx() {
   };
   const ctx = {
     nodes, errors, currentTime: 0, sampleRate: 44100,
-    createGain() { const n = node('gain'); n.gain = param(1); return n; },
+    createGain() { const n = node('gain'); n.gain = param(1, n); return n; },
     createOscillator() {
       const n = node('osc');
-      n.frequency = param(440); n.detune = param(0); n.type = 'sine';
+      n.frequency = param(440, n); n.detune = param(0, n); n.type = 'sine';
       n.start = t => { n.t0 = t; }; n.stop = t => { n.t1 = t; };
       return n;
     },
-    createBiquadFilter() { const n = node('filter'); n.frequency = param(350); n.Q = param(1); n.gain = param(0); n.type = 'lowpass'; return n; },
+    createBiquadFilter() { const n = node('filter'); n.frequency = param(350, n); n.Q = param(1, n); n.gain = param(0, n); n.type = 'lowpass'; return n; },
     createBuffer(ch, len, sr) { return { length: len, sampleRate: sr, getChannelData: () => new Float32Array(len) }; },
     createBufferSource() { const n = node('src'); n.start = t => { n.t0 = t; }; n.stop = t => { n.t1 = t; }; return n; }
   };
   return ctx;
 }
 
-const reaches = (n, dest, seen = new Set()) => n === dest || (!seen.has(n) && seen.add(n) && n.out.some(o => reaches(o, dest, seen)));
+// una conexión hacia un parámetro (vibrato, tremolo) cuenta como llegar al nodo dueño de ese parámetro
+const reaches = (n, dest, seen = new Set()) => n === dest || (!seen.has(n) && seen.add(n) && n.out.some(o => reaches(o.owner || o, dest, seen)));
 
 for (const { id } of TIMBRES) {
   for (const m of [36, 48, 60, 72, 84, 96, 108]) {
