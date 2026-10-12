@@ -3,6 +3,7 @@ import { createKeyboard } from './keyboard.js';
 import { drawRoll, fit } from './roll.js';
 import { audioContext, createPlayer, preview } from './player.js';
 import { toMidi } from './midi.js';
+import { connectMidi } from './midiin.js';
 import { TIMBRES } from './synth.js';
 import { viewFor } from './views/index.js';
 import { noteFor, lettersFor, baseFor, BASE_MIN, BASE_MAX, BASE_DEFAULT } from './typing.js';
@@ -272,6 +273,16 @@ const drop = $('drop');
 for (const ev of ['dragenter', 'dragover']) drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); });
 for (const ev of ['dragleave', 'drop']) drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); });
 drop.addEventListener('drop', e => { if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+
+// teclado midi físico: cada tecla pulsada toca como cualquier otra entrada
+$('midiIn').addEventListener('click', async () => {
+  try {
+    const names = await connectMidi(triggerNote);
+    $('midiMsg').textContent = names.length ? 'midi conectado: ' + names.join(', ') : 'no veo ningún teclado midi, conéctalo y vuelve a pulsar';
+  } catch (e) {
+    $('midiMsg').textContent = 'no se pudo usar midi: ' + (e.message || 'el navegador lo bloqueó');
+  }
+});
 
 // descarga las notas como archivo midi, con la octava elegida aplicada
 $('midi').addEventListener('click', () => {
