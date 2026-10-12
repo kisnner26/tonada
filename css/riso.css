@@ -262,6 +262,7 @@ input[type='range']::-moz-range-thumb { width: 12px; height: 16px; background: v
   font: 600 0.82rem/1.4 var(--font-mono);
   letter-spacing: 0.04em;
 }
+.guide-info[hidden] { display: none; }
 .guide-info.miss { background: var(--ink); color: var(--paper-l); }
 .guide-info.miss .fact { background: var(--paper-l); color: var(--ink); }
 
