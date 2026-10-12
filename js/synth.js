@@ -168,6 +168,29 @@ const timbres = {
       o.start(when); o.stop(when + len + 0.16);
     }
     breath(ctx, f * 2, when, 0.12, g);
+  } },
+
+  // cuerdas: dos dientes de sierra desafinados, ataque lento y vibrato
+  cuerdas: { label: 'cuerdas', play(ctx, m, when, dur, dest) {
+    const f = midiToHz(m), len = Math.max(0.3, dur);
+    const lp = ctx.createBiquadFilter(), g = ctx.createGain();
+    lp.type = 'lowpass';
+    lp.frequency.value = Math.min(8000, f * 5);
+    lp.connect(g);
+    g.connect(dest);
+    g.gain.setValueAtTime(0.0001, when);
+    g.gain.exponentialRampToValueAtTime(0.2, when + 0.09);
+    g.gain.setValueAtTime(0.2, when + len);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + len + 0.22);
+    for (const cents of [-7, 7]) {
+      const o = ctx.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.value = f;
+      o.detune.value = cents;
+      o.connect(lp);
+      vibrato(ctx, o, f * 0.005, when + 0.2, when + len + 0.24, 5.2);
+      o.start(when); o.stop(when + len + 0.24);
+    }
   } }
 };
 
