@@ -49,13 +49,16 @@ const save = async (name, params) => {
 async function open(width, height, mobile) {
   await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 2, mobile });
   await send('Page.navigate', { url: BASE + '#ejemplo' });
-  await sleep(800);
-  await send('Page.reload');
-  for (let i = 0; i < 60; i++) {
-    if ((await run("document.getElementById('play') && !document.getElementById('play').disabled")) === true) break;
-    await sleep(250);
+  // si la red tarda, la página puede quedar sin arrancar: se recarga hasta tres veces
+  for (let intento = 0; intento < 3; intento++) {
+    await sleep(800);
+    await send('Page.reload');
+    for (let i = 0; i < 40; i++) {
+      if ((await run("document.getElementById('play') && !document.getElementById('play').disabled")) === true) { await sleep(500); return; }
+      await sleep(250);
+    }
   }
-  await sleep(500);
+  throw new Error('la página no cargó el ejemplo');
 }
 
 async function pageSize() {
