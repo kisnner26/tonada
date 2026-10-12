@@ -2,6 +2,7 @@ import { transcribe, mixToMono, noteName } from './pitch.js';
 import { createKeyboard } from './keyboard.js';
 import { drawRoll, fit } from './roll.js';
 import { audioContext, createPlayer, preview } from './player.js';
+import { toMidi } from './midi.js';
 
 const $ = id => document.getElementById(id);
 const MAX_SECONDS = 300;
@@ -102,6 +103,7 @@ function analyze() {
   facts();
   redraw();
   $('play').disabled = !notes.length;
+  $('midi').disabled = !notes.length;
   $('time').textContent = '0:00 / ' + fmt(duration);
   setStatus(state.name || 'listo', notes.length > 0);
   say(notes.length ? state.name + ' · ' + notes.length + ' notas' : 'no encontré notas en ' + state.name, !notes.length);
@@ -146,6 +148,16 @@ const drop = $('drop');
 for (const ev of ['dragenter', 'dragover']) drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); });
 for (const ev of ['dragleave', 'drop']) drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); });
 drop.addEventListener('drop', e => { if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+
+// descarga las notas como archivo midi, con la octava elegida aplicada
+$('midi').addEventListener('click', () => {
+  const notes = state.notes.map(n => ({ ...n, m: fit(n.m + shift()) }));
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([toMidi(notes)], { type: 'audio/midi' }));
+  a.download = (state.name.replace(/\.[^.]+$/, '') || 'tonada') + '.mid';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
 
 // los controles de análisis vuelven a transcribir, con un respiro para no trabarse al arrastrar
 let again = 0;
