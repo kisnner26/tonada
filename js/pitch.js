@@ -66,8 +66,13 @@ export function transcribe(samples, sr, options = {}) {
   let f = 0;
   while (f < frames) {
     if (rms[f] < floor) { f++; continue; }
-    let g = f;
-    while (g + 1 < frames && rms[g + 1] >= floor && midi[g + 1] === midi[f]) g++;
+    let g = f, top = rms[f];
+    // una nota repetida del mismo tono se separa por el hueco de volumen entre ataques
+    const reattack = i => rms[i] > rms[i - 1] * 1.3 && rms[i - 1] < top * 0.75;
+    while (g + 1 < frames && rms[g + 1] >= floor && midi[g + 1] === midi[f] && !reattack(g + 1)) {
+      g++;
+      top = Math.max(top, rms[g]);
+    }
     const next = g + 1;
     // la ventana desborda los bordes de la nota: se recortan los cuadros con poca energía
     let peak = 0;
