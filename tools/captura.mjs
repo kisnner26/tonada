@@ -41,6 +41,7 @@ const send = (method, params = {}) => new Promise(res => { waiting.set(++id, res
 const run = async js => (await send('Runtime.evaluate', { expression: js, awaitPromise: true, returnByValue: true })).result.result.value;
 const save = async (name, params) => {
   const r = await send('Page.captureScreenshot', { format: 'png', ...params });
+  if (!r.result) throw new Error(`no pude capturar ${name}: ${JSON.stringify(r.error)}`);
   writeFileSync(OUT + name, Buffer.from(r.result.data, 'base64'));
   console.log('guardada', name);
 };
@@ -73,6 +74,19 @@ await save('escritorio.png', {});
 await run("document.getElementById('play').click()");
 await sleep(3700);
 await save('piano.png', { clip: { ...(await rect('.card.piano')), scale: 1 } });
+
+// un cuadro por instrumento con vista propia, mientras suena
+await send('Emulation.setDeviceMetricsOverride', { width: 1100, height: 2600, deviceScaleFactor: 2, mobile: false });
+await run("document.getElementById('play').textContent === 'detener' && document.getElementById('play').click()");
+for (const id of ['guitarra', 'cuerdas', 'marimba', 'campanas', 'caja', 'juguete', 'flauta']) {
+  await run(`(() => { const s = document.getElementById('timbre'); s.value = '${id}'; s.dispatchEvent(new Event('change')); })()`);
+  await sleep(300);
+  await run("document.getElementById('play').click()");
+  await sleep(3200);
+  await save(`instrumento-${id}.png`, { clip: { ...(await rect('.card.piano')), scale: 1 } });
+  await run("document.getElementById('play').click()");
+  await sleep(200);
+}
 
 // móvil
 await open(390, 800, true);
