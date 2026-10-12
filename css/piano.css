@@ -15,7 +15,7 @@
   overflow-x: auto;
   border: 3px solid var(--ink);
   background-color: var(--paper-p);
-  background-image: radial-gradient(circle at center, rgba(33, 43, 128, 0.18) 1px, transparent 1.5px);
+  background-image: radial-gradient(circle at center, var(--dot-card) 1px, transparent 1.5px);
   background-size: 8px 8px;
   scrollbar-color: var(--ink) var(--paper-p);
 }

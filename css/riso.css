@@ -1,15 +1,18 @@
-/* estética risografía de lumora: tinta azul, naranja, papel crema, trama de puntos, sombras duras */
+/* estética risografía de lumora en una sola tinta: negro sobre papel blanco, trama de puntos, sombras duras */
 :root {
-  --ink: #212b80;
-  --ink-d: #141a55;
-  --hot: #f97a2a;
-  --on-hot: #141a55;  /* texto sobre fondo --hot */
-  --hot-d: #e0561b;
-  --mid: #6b8fb3;
-  --paper: #f3ead7;
-  --paper-l: #faf3e4;
-  --paper-p: #f7edd8;
-  --mute: rgba(33, 43, 128, 0.62);
+  --ink: #000;
+  --ink-d: #000;
+  --hot: #000;
+  --on-hot: #fff;     /* texto sobre fondo --hot */
+  --hot-d: #000;
+  --mid: #000;
+  --paper: #fff;
+  --paper-l: #fff;
+  --paper-p: #fff;
+  --mute: #000;
+  --dot: rgba(255, 255, 255, 0.3);   /* puntos de la trama sobre fondo negro */
+  --dot-soft: rgba(255, 255, 255, 0.12);
+  --dot-card: rgba(0, 0, 0, 0.16);   /* puntos de la trama sobre papel */
   --font-display: 'Anybody', 'Arial Black', sans-serif;
   --font-body: 'Anybody', system-ui, sans-serif;
   --font-mono: 'Martian Mono', ui-monospace, Menlo, monospace;
@@ -30,10 +33,10 @@ body {
   font-size: 16px;
   line-height: 1.45;
   background-color: var(--ink);
-  /* dos tintas desfasadas: crema y naranja */
+  /* dos capas de puntos desfasadas, como una impresión con registro flojo */
   background-image:
-    radial-gradient(circle at center, rgba(243, 234, 215, 0.26) 1.1px, transparent 1.7px),
-    radial-gradient(circle at center, rgba(249, 122, 42, 0.18) 1.1px, transparent 1.7px);
+    radial-gradient(circle at center, var(--dot) 1.1px, transparent 1.7px),
+    radial-gradient(circle at center, var(--dot-soft) 1.1px, transparent 1.7px);
   background-size: 7px 7px, 7px 7px;
   background-position: 0 0, 3.5px 3.5px;
   padding: 0 16px 48px;
@@ -103,7 +106,7 @@ main {
   border: 3px solid var(--ink-d);
   background:
     radial-gradient(circle at center, var(--ink) 1.3px, transparent 1.9px) 0 0 / 6px 6px,
-    var(--hot);
+    var(--paper-l);
 }
 
 .tag {
@@ -136,7 +139,7 @@ h1 {
 }
 h1 span { display: block; }
 h1 .l2 { font-style: italic; font-weight: 400; padding-left: 0.9em; }
-h1 b { color: var(--hot-d); font-weight: 800; }
+h1 b { background: var(--ink); color: var(--paper-l); font-weight: 800; padding: 0 0.14em 0.04em; }
 
 .lede {
   max-width: 54ch;
@@ -150,7 +153,7 @@ h1 b { color: var(--hot-d); font-weight: 800; }
 /* tarjetas */
 .card {
   background-color: var(--paper-l);
-  background-image: radial-gradient(circle at center, rgba(33, 43, 128, 0.14) 1px, transparent 1.5px);
+  background-image: radial-gradient(circle at center, var(--dot-card) 1px, transparent 1.5px);
   background-size: 9px 9px;
   border: 3px solid var(--ink-d);
   box-shadow: 8px 8px 0 var(--ink-d);
@@ -221,7 +224,7 @@ h1 b { color: var(--hot-d); font-weight: 800; }
 .field output { float: right; color: var(--hot-d); font-weight: 600; letter-spacing: 0.04em; }
 select {
   appearance: none;
-  background: var(--paper-p) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23212b80' stroke-width='2.5'/%3E%3C/svg%3E") no-repeat right 10px center;
+  background: var(--paper-p) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23000' stroke-width='2.5'/%3E%3C/svg%3E") no-repeat right 10px center;
   border: 3px solid var(--ink);
   box-shadow: 3px 3px 0 var(--ink);
   padding: 9px 30px 9px 10px;
