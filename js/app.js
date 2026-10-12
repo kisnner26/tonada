@@ -1,4 +1,4 @@
-import { transcribe, mixToMono, noteName } from './pitch.js';
+import { transcribe, mixToMono, noteName, solfege } from './pitch.js';
 import { createKeyboard } from './keyboard.js';
 import { drawRoll, fit } from './roll.js';
 import { audioContext, createPlayer, preview } from './player.js';
@@ -6,7 +6,8 @@ import { toMidi } from './midi.js';
 import { connectMidi } from './midiin.js';
 import { TIMBRES } from './synth.js';
 import { viewFor } from './views/index.js';
-import { noteFor, lettersFor, baseFor, BASE_MIN, BASE_MAX, BASE_DEFAULT } from './typing.js';
+import { noteFor, lettersFor, hintFor, baseFor, BASE_MIN, BASE_MAX, BASE_DEFAULT } from './typing.js';
+import { createGuide } from './guide.js';
 
 const $ = id => document.getElementById(id);
 const MAX_SECONDS = 300;
@@ -61,7 +62,17 @@ function livePressed() {
   return [...pressed.keys()];
 }
 
-function redraw(t = 0) {
+// instante que se dibuja: el de la reproducción, el de la nota que espera el modo guiado, o el inicio
+const guide = createGuide();
+let guideOn = false;
+function curT() {
+  if (player.isPlaying()) return player.now();
+  if (!guideOn) return 0;
+  const n = guide.expected();
+  return n ? n.t + Math.min(0.01, n.d / 2) : state.duration + 5;
+}
+
+function redraw(t = curT()) {
   const canvas = $('roll');
   if (view) {
     const g = canvas.getContext('2d');
@@ -96,7 +107,7 @@ function applyView() {
   view = viewFor(id);
   $('viewTitle').textContent = TIMBRES.find(t => t.id === id).label;
   layoutStage();
-  redraw(player.isPlaying() ? player.now() : 0);
+  redraw();
 }
 
 // en las vistas con piezas, arrastrar con el ratón toca cada pieza que se cruza
@@ -121,7 +132,19 @@ $('roll').addEventListener('pointermove', e => {
 addEventListener('pointerup', () => { dragging = false; lastHit = null; });
 
 // una nota tocada desde cualquier entrada: suena y se ve pulsada
-function triggerNote(m) {
+// any: el modo "cualquier tecla" toca la nota que toca sin importar cuál se pulsó
+function triggerNote(m, { any = false } = {}) {
+  let miss = false;
+  if (guideOn && guide.total && !guide.done) {
+    const sh = shift(), exp = guide.expected(), want = fit(exp.m + sh);
+    if (any) { guide.advance(); m = want; }
+    else {
+      const r = guide.press(m, sh);
+      if (r === 'hit') m = want;   // suena la nota esperada, no la octava que pulsaste
+      else miss = true;
+    }
+    updateGuide(miss);
+  }
   preview(m, $('timbre').value);
   showPress(m);
 }
@@ -129,7 +152,7 @@ function triggerNote(m) {
 function showPress(m) {
   if (!view) return kb.flash(m, 220);
   pressed.set(m, performance.now() + 260);
-  const again = () => redraw(player.isPlaying() ? player.now() : 0);
+  const again = () => redraw();
   again();
   setTimeout(again, 280);
 }
@@ -157,11 +180,54 @@ addEventListener('keydown', e => {
     setBase(base + (e.code === 'ArrowRight' ? 12 : -12));
     return;
   }
+  if (e.repeat) return;
+  // con "cualquier tecla" activo, una letra, un número o un signo toca la siguiente nota
+  if (guideOn && $('anykey').checked && !guide.done && (/^(Key|Digit)/.test(e.code) || ['Comma', 'Period', 'Semicolon', 'Slash'].includes(e.code))) {
+    e.preventDefault();
+    return triggerNote(null, { any: true });
+  }
   const m = noteFor(e.code, base);
-  if (m === null || e.repeat) return;
+  if (m === null) return;
   e.preventDefault();
   triggerNote(m);
 });
+
+// modo guiado: la nota que toca se pinta de negro, la melodía espera y avanza en orden
+function markTarget() {
+  const n = guideOn ? guide.expected() : null;
+  kb.target(n ? fit(n.m + shift()) : null);
+}
+
+function updateGuide(miss = false) {
+  $('guideBtn').textContent = 'modo guiado: ' + (guideOn ? 'sí' : 'no');
+  $('guideBtn').setAttribute('aria-pressed', String(guideOn));
+  $('guideBtn').classList.toggle('hot', guideOn);
+  $('guideReset').disabled = !guideOn;
+  $('guideInfo').hidden = !guideOn;
+  $('play').disabled = guideOn || !state.notes.length;
+  markTarget();
+  if (guideOn) {
+    const n = guide.expected();
+    $('guideCount').textContent = guide.index + ' / ' + guide.total;
+    if (n) {
+      const m = fit(n.m + shift()), h = hintFor(m, base);
+      $('guideHint').textContent = 'toca ' + solfege(m) + ' (' + noteName(m) + ')' + (h ? ' · tecla ' + h.label : '');
+      $('scroll').scrollTo({ left: Math.max(0, xOf(n.m + shift()) - $('scroll').clientWidth / 2), behavior: 'smooth' });
+    } else {
+      $('guideHint').textContent = 'terminaste: ' + guide.hits + ' notas, ' + guide.misses + ' fallos';
+    }
+    $('guideInfo').classList.toggle('miss', miss);
+    if (miss) setTimeout(() => $('guideInfo').classList.remove('miss'), 260);
+  }
+  redraw();
+}
+
+$('guideBtn').addEventListener('click', () => {
+  guideOn = !guideOn;
+  if (guideOn) { player.stop(); guide.load(state.notes); }
+  updateGuide();
+});
+$('guideReset').addEventListener('click', () => { guide.reset(); updateGuide(); });
 
 // tras elegir en un menú, el foco vuelve a la página para que las letras toquen notas
 for (const id of ['timbre', 'rate', 'oct']) $(id).addEventListener('change', e => e.target.blur());
@@ -206,7 +272,7 @@ function togglePlay() {
   frame();
 }
 $('play').addEventListener('click', togglePlay);
-$('oct').addEventListener('change', () => { player.stop(); redraw(); });
+$('oct').addEventListener('change', () => { player.stop(); updateGuide(); });
 
 
 // analiza las muestras guardadas con los ajustes actuales
@@ -223,8 +289,10 @@ function analyze() {
     $('scroll').scrollLeft = Math.max(0, xOf(mid + shift()) - $('scroll').clientWidth / 2);
     redraw();
   }
-  $('play').disabled = !notes.length;
   $('midi').disabled = !notes.length;
+  $('guideBtn').disabled = !notes.length;
+  if (guideOn) guide.load(notes);
+  updateGuide();
   $('time').textContent = '0:00 / ' + fmt(duration);
   setStatus(state.name || 'listo', notes.length > 0);
   say(notes.length ? state.name + ' · ' + notes.length + ' notas' : 'no encontré notas en ' + state.name, !notes.length);
@@ -311,7 +379,7 @@ setBase(BASE_DEFAULT);
 applyView();
 
 // al cambiar el tamaño el canvas se reinicia: se acomoda y se vuelve a pintar
-addEventListener('resize', () => { layoutStage(); redraw(player.isPlaying() ? player.now() : 0); });
+addEventListener('resize', () => { layoutStage(); redraw(); });
 
 // al cambiar de timbre cambia el instrumento en pantalla y suena una nota de muestra
 $('timbre').addEventListener('change', () => { applyView(); preview(72, $('timbre').value); });
