@@ -2,6 +2,9 @@ import { fft, hann } from './fft.js';
 
 const NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
+const SOLFEO = ['do', 'do#', 're', 're#', 'mi', 'fa', 'fa#', 'sol', 'sol#', 'la', 'la#', 'si'];
+export const solfege = m => SOLFEO[((m % 12) + 12) % 12];
+
 export const midiToHz = m => 440 * Math.pow(2, (m - 69) / 12);
 export const hzToMidi = f => 69 + 12 * Math.log2(f / 440);
 export const noteName = m => NAMES[((m % 12) + 12) % 12] + (Math.floor(m / 12) - 1);
