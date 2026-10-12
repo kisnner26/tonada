@@ -103,6 +103,25 @@ const timbres = {
     o.frequency.value = f;
     o.connect(lp);
     o.start(when); o.stop(when + len + 0.05);
+  } },
+
+  // marimba: fundamental y cuarta octava con caída corta, más larga en los graves
+  marimba: { label: 'marimba', play(ctx, m, when, dur, dest) {
+    const f = midiToHz(m), len = 0.3 + 0.7 * (1 - Math.min(1, Math.max(0, (m - 36) / 72)));
+    const g = ctx.createGain();
+    g.connect(dest);
+    g.gain.setValueAtTime(0.0001, when);
+    g.gain.exponentialRampToValueAtTime(0.5, when + 0.002);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + len);
+    for (const [h, a] of [[1, 1], [4, 0.28]]) {
+      if (f * h > 12000) continue;
+      const o = ctx.createOscillator(), og = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = f * h;
+      og.gain.value = a * 0.5;
+      o.connect(og); og.connect(g);
+      o.start(when); o.stop(when + len + 0.05);
+    }
   } }
 };
 
