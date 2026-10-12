@@ -102,6 +102,12 @@ function analyze() {
   state.duration = duration;
   facts();
   redraw();
+  // centra el teclado en el registro de la melodía
+  if (notes.length) {
+    const mid = notes.map(n => n.m).sort((a, b) => a - b)[Math.floor(notes.length / 2)];
+    $('scroll').scrollLeft = Math.max(0, kb.x(fit(mid + shift())) - $('scroll').clientWidth / 2);
+    redraw();
+  }
   $('play').disabled = !notes.length;
   $('midi').disabled = !notes.length;
   $('time').textContent = '0:00 / ' + fmt(duration);
