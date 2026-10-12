@@ -107,17 +107,17 @@ function analyze() {
   say(notes.length ? state.name + ' · ' + notes.length + ' notas' : 'no encontré notas en ' + state.name, !notes.length);
 }
 
-async function loadFile(file) {
-  say('leyendo ' + file.name + '…');
+async function loadAudio(data, name) {
+  say('leyendo ' + name + '…');
   setStatus('analizando', false);
   try {
-    const buf = await audioContext().decodeAudioData(await file.arrayBuffer());
+    const buf = await audioContext().decodeAudioData(data);
     const len = Math.min(buf.length, Math.floor(buf.sampleRate * MAX_SECONDS));
     const chans = [];
     for (let c = 0; c < buf.numberOfChannels; c++) chans.push(buf.getChannelData(c).subarray(0, len));
     state.samples = mixToMono(chans);
     state.sr = buf.sampleRate;
-    state.name = file.name;
+    state.name = name;
     // deja pintar el estado antes de la parte pesada
     await new Promise(r => setTimeout(r, 30));
     analyze();
@@ -128,9 +128,20 @@ async function loadFile(file) {
   }
 }
 
+const loadFile = async file => loadAudio(await file.arrayBuffer(), file.name);
+
 // archivo: botón y arrastrar
 $('pick').addEventListener('click', () => $('file').click());
 $('file').addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); e.target.value = ''; });
+$('sample').addEventListener('click', async () => {
+  try {
+    const res = await fetch('examples/oda-a-la-alegria.wav');
+    if (!res.ok) throw new Error(res.status);
+    loadAudio(await res.arrayBuffer(), 'oda-a-la-alegria.wav');
+  } catch (e) {
+    say('no pude cargar el ejemplo. abre la página desde un servidor, no desde el archivo.', true);
+  }
+});
 const drop = $('drop');
 for (const ev of ['dragenter', 'dragover']) drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); });
 for (const ev of ['dragleave', 'drop']) drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); });
