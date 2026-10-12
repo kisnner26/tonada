@@ -59,12 +59,9 @@ export function createNeck({ strings, steps, fretted, inlays = [], thickness }) 
       const ys = n === 12 ? [mid - (G.bottom - G.top) * 0.28, mid + (G.bottom - G.top) * 0.28] : [mid];
       for (const yy of ys) {
         g.beginPath();
-        g.arc(x, yy, 5, 0, Math.PI * 2);
-        g.fillStyle = pal.hatch;
+        g.arc(x, yy, 4.5, 0, Math.PI * 2);
+        g.fillStyle = pal.ink;
         g.fill();
-        g.strokeStyle = pal.ink;
-        g.lineWidth = 1.5;
-        g.stroke();
       }
     }
 
