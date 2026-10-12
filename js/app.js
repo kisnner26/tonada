@@ -135,7 +135,7 @@ const loadFile = async file => loadAudio(await file.arrayBuffer(), file.name);
 // archivo: botón y arrastrar
 $('pick').addEventListener('click', () => $('file').click());
 $('file').addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); e.target.value = ''; });
-$('sample').addEventListener('click', async () => {
+async function loadSample() {
   try {
     const res = await fetch('examples/oda-a-la-alegria.wav');
     if (!res.ok) throw new Error(res.status);
@@ -143,7 +143,10 @@ $('sample').addEventListener('click', async () => {
   } catch (e) {
     say('no pude cargar el ejemplo. abre la página desde un servidor, no desde el archivo.', true);
   }
-});
+}
+$('sample').addEventListener('click', loadSample);
+// #ejemplo en la dirección abre la página con el ejemplo ya cargado
+if (location.hash === '#ejemplo') loadSample();
 const drop = $('drop');
 for (const ev of ['dragenter', 'dragover']) drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); });
 for (const ev of ['dragleave', 'drop']) drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); });
