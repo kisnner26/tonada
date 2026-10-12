@@ -1,0 +1,11 @@
+{
+  "name": "tonada",
+  "version": "0.1.0",
+  "description": "audio o video a piano, en el navegador",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "test": "node tools/test_pitch.mjs && node tools/test_midi.mjs",
+    "start": "python3 -m http.server 8080"
+  }
+}
