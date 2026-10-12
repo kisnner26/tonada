@@ -40,6 +40,10 @@ assert.equal(transcribe(new Float32Array(SR), SR).notes.length, 0);
 const quiet = transcribe(render([[76, 0.2, 0.4, 0.02]], 1), SR);
 assert.deepEqual(quiet.notes.map(n => n.m), [76]);
 
+// la misma nota repetida con un hueco corto se cuenta como dos
+const rep = transcribe(render([[72, 0.2, 0.3], [72, 0.6, 0.3]], 1.2), SR);
+assert.deepEqual(rep.notes.map(n => n.m), [72, 72]);
+
 // otra tasa de muestreo
 const sr2 = 22050, x2 = new Float32Array(sr2);
 for (let i = 0; i < sr2 * 0.5; i++) x2[i] = 0.5 * Math.sin((2 * Math.PI * 1976 * i) / sr2);
