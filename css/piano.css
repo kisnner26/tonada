@@ -1,0 +1,50 @@
+/* teclado y rollo de notas, en la misma tinta riso */
+.facts { display: flex; flex-wrap: wrap; gap: 10px; min-height: 30px; }
+.fact {
+  background: var(--ink);
+  color: var(--paper-l);
+  padding: 7px 10px;
+  font: 500 0.68rem/1 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.fact.hot { background: var(--orange); color: var(--ink-d); }
+.fact.empty { background: transparent; color: var(--mute); padding-left: 0; letter-spacing: 0.06em; text-transform: none; font-size: 0.78rem; }
+
+.scroll {
+  overflow-x: auto;
+  border: 3px solid var(--ink);
+  background-color: var(--paper-p);
+  background-image: radial-gradient(circle at center, rgba(33, 43, 128, 0.18) 1px, transparent 1.5px);
+  background-size: 8px 8px;
+  scrollbar-color: var(--ink) var(--paper-p);
+}
+
+.stage { position: relative; --kw: 28px; }
+.stage canvas { display: block; }
+
+.keys { position: relative; height: 160px; border-top: 3px solid var(--ink); }
+.key { position: absolute; top: 0; touch-action: manipulation; user-select: none; -webkit-user-select: none; cursor: pointer; }
+.key.w {
+  width: var(--kw);
+  height: 100%;
+  background: var(--paper-l);
+  border-right: 2px solid var(--ink);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 7px;
+  font: 600 0.58rem/1 var(--font-mono);
+  color: var(--mute);
+}
+.key.b {
+  width: calc(var(--kw) * 0.62);
+  height: 62%;
+  z-index: 2;
+  background: var(--ink);
+  border: 2px solid var(--ink-d);
+  border-top: 0;
+  box-shadow: 2px 3px 0 var(--ink-d);
+}
+.key.on.w { background: var(--orange); color: var(--ink-d); }
+.key.on.b { background: var(--orange-d); }
