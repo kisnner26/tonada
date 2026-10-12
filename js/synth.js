@@ -64,6 +64,26 @@ const timbres = {
       o.connect(og); og.connect(g);
       o.start(when); o.stop(when + len + 0.05);
     }
+  } },
+
+  // órgano: barras de armónicos que se sostienen mientras dura la nota
+  organo: { label: 'órgano', play(ctx, m, when, dur, dest) {
+    const f = midiToHz(m), len = Math.max(0.12, dur);
+    const g = ctx.createGain();
+    g.connect(dest);
+    g.gain.setValueAtTime(0.0001, when);
+    g.gain.exponentialRampToValueAtTime(0.22, when + 0.012);
+    g.gain.setValueAtTime(0.22, when + len);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + len + 0.09);
+    for (const [h, a] of [[1, 1], [2, 0.7], [3, 0.45], [4, 0.3], [6, 0.15]]) {
+      if (f * h > 12000) continue;
+      const o = ctx.createOscillator(), og = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = f * h;
+      og.gain.value = a * 0.4;
+      o.connect(og); og.connect(g);
+      o.start(when); o.stop(when + len + 0.12);
+    }
   } }
 };
 
