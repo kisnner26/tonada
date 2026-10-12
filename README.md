@@ -1,6 +1,6 @@
 # tonada
 
-audio o video a piano, en el navegador. sueltas un archivo, tonada saca la melodía como notas y las toca en un teclado con la estética risografía de [lumora](https://github.com/kisnner26/lumora).
+audio o video a piano, en el navegador. sueltas un archivo, tonada saca la melodía como notas y las toca en un teclado con la estética risografía de [lumora](https://github.com/kisnner26/lumora), en una sola tinta: negro sobre papel blanco, trama de puntos y sombras duras.
 
 **[probar en vivo](https://kisnner26.github.io/tonada/#ejemplo)**
 
@@ -10,7 +10,7 @@ audio o video a piano, en el navegador. sueltas un archivo, tonada saca la melod
 
 - lee cualquier audio o video que el navegador sepa decodificar (mp3, wav, m4a, mp4)
 - busca el tono dominante cada 23 ms con una fft, lo redondea a nota midi y junta los cuadros iguales en notas con inicio y duración
-- las notas caen sobre el teclado y suenan con un timbre de piano, caja de música o juguete
+- las notas caen sobre el teclado y suenan con diez timbres: piano, juguete, caja de música, órgano, guitarra, marimba, flauta, cuerdas, campanas y sintetizador
 - sensibilidad y nota mínima se pueden mover y la transcripción se rehace al instante
 - se puede bajar una o dos octavas, tocar más lento y descargar la melodía como `.mid`
 - nada se sube a ningún servidor, todo corre en tu equipo
@@ -35,7 +35,7 @@ en `examples/` hay un audio para probar. el botón "probar con el ejemplo" lo ca
 npm test
 ```
 
-generan tonos sintéticos y comprueban que la transcripción devuelva las notas, los tiempos y las repeticiones correctas, y que el midi tenga la estructura esperada. las capturas de arriba salen de `node tools/captura.mjs`.
+generan tonos sintéticos y comprueban que la transcripción devuelva las notas, los tiempos y las repeticiones correctas, que el midi tenga la estructura esperada y que cada timbre arme un grafo de audio válido (rampas, tiempos y conexiones) sobre un contexto falso. las capturas de arriba salen de `node tools/captura.mjs`.
 
 ## límites
 
@@ -52,7 +52,7 @@ generan tonos sintéticos y comprueban que la transcripción devuelva las notas,
 ```
 js/fft.js        transformada rápida de fourier
 js/pitch.js      de muestras a notas
-js/synth.js      timbres con web audio
+js/synth.js      los diez timbres, con web audio
 js/midi.js       escritor de archivos midi
 js/keyboard.js   teclas y posiciones
 js/roll.js       notas que caen
