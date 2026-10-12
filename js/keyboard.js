@@ -42,6 +42,19 @@ export function createKeyboard(stage, keysEl, canvas, onPress) {
     setTimeout(() => el.classList.remove('on'), ms);
   }
 
+  // letra del teclado de la computadora sobre cada tecla: hints es un Map nota -> letra
+  function setHints(hints) {
+    for (let m = LOW; m <= HIGH; m++) {
+      const el = els[m];
+      el.querySelector('.hint')?.remove();
+      if (!hints.has(m)) continue;
+      const h = document.createElement('i');
+      h.className = 'hint';
+      h.textContent = hints.get(m);
+      el.appendChild(h);
+    }
+  }
+
   function clear() { for (const el of Object.values(els)) el.classList.remove('on'); }
 
   keysEl.addEventListener('pointerdown', e => {
@@ -51,5 +64,5 @@ export function createKeyboard(stage, keysEl, canvas, onPress) {
 
   layout();
   addEventListener('resize', layout);
-  return { x, w, flash, clear, layout, whites: () => whites };
+  return { x, w, flash, clear, layout, setHints, whites: () => whites };
 }

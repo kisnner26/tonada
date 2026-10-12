@@ -5,6 +5,7 @@ import { audioContext, createPlayer, preview } from './player.js';
 import { toMidi } from './midi.js';
 import { TIMBRES } from './synth.js';
 import { viewFor } from './views/index.js';
+import { noteFor, lettersFor, baseFor, BASE_MIN, BASE_MAX, BASE_DEFAULT } from './typing.js';
 
 const $ = id => document.getElementById(id);
 const MAX_SECONDS = 300;
@@ -14,10 +15,7 @@ const state = { samples: null, sr: 44100, name: '', notes: [], duration: 0 };
 // el selector se arma con los timbres que ofrece el sintetizador
 for (const t of TIMBRES) $('timbre').add(new Option(t.label, t.id));
 
-const kb = createKeyboard($('stage'), $('keys'), $('roll'), m => {
-  preview(m, $('timbre').value);
-  kb.flash(m, 220);
-});
+const kb = createKeyboard($('stage'), $('keys'), $('roll'), m => triggerNote(m));
 
 const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
 
@@ -104,12 +102,54 @@ $('roll').addEventListener('pointerdown', e => {
   if (!view) return;
   const r = e.currentTarget.getBoundingClientRect();
   const m = view.hit(e.clientX - r.left, e.clientY - r.top, $('roll').width, $('roll').height);
-  if (m == null) return;
-  preview(m, $('timbre').value);
-  pressed.set(m, performance.now() + 260);
-  redraw(player.isPlaying() ? player.now() : 0);
-  setTimeout(() => redraw(player.isPlaying() ? player.now() : 0), 280);
+  if (m != null) triggerNote(m);
 });
+
+// una nota tocada desde cualquier entrada: suena y se ve pulsada
+function triggerNote(m) {
+  preview(m, $('timbre').value);
+  showPress(m);
+}
+
+function showPress(m) {
+  if (!view) return kb.flash(m, 220);
+  pressed.set(m, performance.now() + 260);
+  const again = () => redraw(player.isPlaying() ? player.now() : 0);
+  again();
+  setTimeout(again, 280);
+}
+
+// octava base del teclado de la compu y letras sobre las teclas
+let base = BASE_DEFAULT;
+function setBase(b) {
+  base = Math.min(BASE_MAX, Math.max(BASE_MIN, b));
+  kb.setHints(lettersFor(base));
+  $('baseNote').textContent = noteName(base);
+}
+
+addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const t = e.target;
+  if (t.closest?.('input, select, textarea')) return;
+  if (e.code === 'Space') {
+    if (t.closest?.('button')) return;
+    e.preventDefault();
+    if (!e.repeat && !$('play').disabled) togglePlay();
+    return;
+  }
+  if ((e.code === 'ArrowLeft' || e.code === 'ArrowRight') && t.id !== 'scroll') {
+    e.preventDefault();
+    setBase(base + (e.code === 'ArrowRight' ? 12 : -12));
+    return;
+  }
+  const m = noteFor(e.code, base);
+  if (m === null || e.repeat) return;
+  e.preventDefault();
+  triggerNote(m);
+});
+
+// tras elegir en un menú, el foco vuelve a la página para que las letras toquen notas
+for (const id of ['timbre', 'rate', 'oct']) $(id).addEventListener('change', e => e.target.blur());
 
 // reproducción
 let raf = 0, follow = 0;
@@ -168,6 +208,7 @@ function analyze() {
     $('scroll').scrollLeft = Math.max(0, xOf(mid + shift()) - $('scroll').clientWidth / 2);
     redraw();
   }
+  setBase(baseFor(notes));
   $('play').disabled = !notes.length;
   $('midi').disabled = !notes.length;
   $('time').textContent = '0:00 / ' + fmt(duration);
@@ -241,6 +282,7 @@ $('gate').addEventListener('input', reanalyze);
 $('minms').addEventListener('input', reanalyze);
 
 facts();
+setBase(BASE_DEFAULT);
 applyView();
 
 // al cambiar el tamaño el canvas se reinicia: se acomoda y se vuelve a pintar

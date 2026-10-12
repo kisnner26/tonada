@@ -50,3 +50,29 @@
 /* la tecla blanca pulsada va rayada para no fundirse con las negras vecinas */
 .key.on.w { background: repeating-linear-gradient(135deg, var(--paper-l) 0 3px, var(--ink) 3px 5px); color: var(--ink); text-shadow: 0 0 3px var(--paper-l), 0 0 3px var(--paper-l), 0 0 3px var(--paper-l); }
 .key.on.b { background: var(--paper-l); }
+
+/* letra de la compu sobre cada tecla */
+.key .hint {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font: 700 0.62rem/1 var(--font-mono);
+  font-style: normal;
+  pointer-events: none;
+}
+.key.w .hint { bottom: 26px; color: var(--ink); }
+.key.b .hint { bottom: 8px; color: var(--paper-l); }
+.key.on.w .hint { background: var(--paper-l); padding: 1px 3px; }
+
+.keys-help { margin: 0; font: 500 0.72rem/1.9 var(--font-mono); letter-spacing: 0.04em; }
+kbd {
+  display: inline-block;
+  min-width: 1.7em;
+  padding: 2px 5px 3px;
+  margin-inline: 1px;
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+  background: var(--paper-l);
+  font: 700 0.7rem/1 var(--font-mono);
+  text-align: center;
+}
