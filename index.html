@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tonada</title>
+<meta name="description" content="Suelta un audio o un video y Tonada transcribe su melodía a notas y la toca en un piano, todo en el navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:ital,wdth,wght@0,50..150,100..900;1,50..150,100..900&family=Caveat:wght@500..700&family=Martian+Mono:wdth,wght@75..112.5,300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/riso.css">
+<link rel="stylesheet" href="css/piano.css">
+</head>
+<body>
+<header class="top">
+  <div class="logo">TONADA<i></i></div>
+  <div class="status" id="status"><i class="dot"></i><span id="statusText">sin audio</span></div>
+</header>
+
+<main>
+  <section class="hero">
+    <p class="tag">audio a piano en el navegador</p>
+    <h1><span class="l1">cada nota</span><span class="l2">tiene su <b>tecla</b></span></h1>
+    <p class="lede">suelta un audio o un video. tonada busca el tono dominante en cada instante, lo convierte en notas y las toca en el piano. nada sale de tu equipo.</p>
+  </section>
+
+  <section class="card drop" id="drop">
+    <h2><span class="num">01</span>archivo</h2>
+    <p class="drop-text">arrastra aquí un audio o un video, o elígelo.</p>
+    <div class="row">
+      <button class="btn hot" id="pick" type="button">elegir archivo</button>
+      <button class="btn" id="sample" type="button">probar con el ejemplo</button>
+    </div>
+    <input id="file" type="file" accept="audio/*,video/*" hidden>
+    <p class="msg" id="msg" role="status"></p>
+  </section>
+
+  <section class="card controls">
+    <h2><span class="num">02</span>reproducción</h2>
+    <div class="transport">
+      <button class="btn hot big" id="play" type="button" disabled>reproducir</button>
+      <span class="time" id="time">0:00 / 0:00</span>
+    </div>
+    <div class="track"><i id="bar"></i></div>
+    <div class="grid">
+      <label class="field" for="timbre">timbre
+        <select id="timbre"><option value="piano" selected>piano</option></select>
+      </label>
+      <label class="field" for="rate">velocidad
+        <select id="rate">
+          <option value="1" selected>1x</option><option value="0.75">0.75x</option><option value="0.5">0.5x</option>
+        </select>
+      </label>
+      <label class="field" for="oct">octava
+        <select id="oct">
+          <option value="0" selected>original</option><option value="-1">una abajo</option><option value="-2">dos abajo</option>
+        </select>
+      </label>
+    </div>
+    <div class="grid">
+      <label class="field" for="gate">sensibilidad <output id="gateOut">2%</output>
+        <input id="gate" type="range" min="1" max="30" step="1" value="2">
+      </label>
+      <label class="field" for="minms">nota mínima <output id="minmsOut">90 ms</output>
+        <input id="minms" type="range" min="30" max="400" step="10" value="90">
+      </label>
+    </div>
+  </section>
+
+  <section class="card piano">
+    <h2><span class="num">03</span>piano</h2>
+    <div class="facts" id="facts"></div>
+    <div class="scroll" id="scroll" tabindex="0" aria-label="teclado de piano, usa las flechas para desplazarte">
+      <div class="stage" id="stage">
+        <canvas id="roll" height="200"></canvas>
+        <div class="keys" id="keys"></div>
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn" id="midi" type="button" disabled>descargar midi</button>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>tonada · mit</span>
+  <a href="https://github.com/kisnner26/tonada">github.com/kisnner26/tonada</a>
+</footer>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
