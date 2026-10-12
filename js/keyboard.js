@@ -57,10 +57,22 @@ export function createKeyboard(stage, keysEl, canvas, onPress) {
 
   function clear() { for (const el of Object.values(els)) el.classList.remove('on'); }
 
+  // con ratón o lápiz se puede arrastrar sobre las teclas para hacer un glissando; con el dedo se desliza la página
+  let down = false, last = null;
+  const keyAt = e => document.elementFromPoint(e.clientX, e.clientY)?.closest('.key') || null;
   keysEl.addEventListener('pointerdown', e => {
-    const el = e.target.closest('.key');
-    if (el) onPress(+el.dataset.m);
+    const el = keyAt(e);
+    if (!el) return;
+    down = e.pointerType !== 'touch';
+    last = el;
+    onPress(+el.dataset.m);
   });
+  keysEl.addEventListener('pointermove', e => {
+    if (!down) return;
+    const el = keyAt(e);
+    if (el && el !== last) { last = el; onPress(+el.dataset.m); }
+  });
+  addEventListener('pointerup', () => { down = false; last = null; });
 
   layout();
   addEventListener('resize', layout);

@@ -98,12 +98,26 @@ function applyView() {
   redraw(player.isPlaying() ? player.now() : 0);
 }
 
+// en las vistas con piezas, arrastrar con el ratón toca cada pieza que se cruza
+let dragging = false, lastHit = null;
+function hitAt(e) {
+  const r = $('roll').getBoundingClientRect();
+  return view.hit(e.clientX - r.left, e.clientY - r.top, $('roll').width, $('roll').height);
+}
 $('roll').addEventListener('pointerdown', e => {
   if (!view) return;
-  const r = e.currentTarget.getBoundingClientRect();
-  const m = view.hit(e.clientX - r.left, e.clientY - r.top, $('roll').width, $('roll').height);
+  const m = hitAt(e);
+  dragging = e.pointerType !== 'touch';
+  lastHit = m;
   if (m != null) triggerNote(m);
 });
+$('roll').addEventListener('pointermove', e => {
+  if (!view || !dragging) return;
+  const m = hitAt(e);
+  if (m != null && m !== lastHit) triggerNote(m);
+  lastHit = m;
+});
+addEventListener('pointerup', () => { dragging = false; lastHit = null; });
 
 // una nota tocada desde cualquier entrada: suena y se ve pulsada
 function triggerNote(m) {
