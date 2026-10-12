@@ -96,7 +96,7 @@ $('oct').addEventListener('change', () => { player.stop(); redraw(); });
 // analiza las muestras guardadas con los ajustes actuales
 function analyze() {
   if (!state.samples) return;
-  const { notes, duration } = transcribe(state.samples, state.sr, {});
+  const { notes, duration } = transcribe(state.samples, state.sr, { gate: +$('gate').value / 100, minMs: +$('minms').value });
   state.notes = notes;
   state.duration = duration;
   facts();
@@ -146,6 +146,18 @@ const drop = $('drop');
 for (const ev of ['dragenter', 'dragover']) drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); });
 for (const ev of ['dragleave', 'drop']) drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); });
 drop.addEventListener('drop', e => { if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+
+// los controles de análisis vuelven a transcribir, con un respiro para no trabarse al arrastrar
+let again = 0;
+function reanalyze() {
+  $('gateOut').textContent = $('gate').value + '%';
+  $('minmsOut').textContent = $('minms').value + ' ms';
+  player.stop();
+  clearTimeout(again);
+  again = setTimeout(analyze, 160);
+}
+$('gate').addEventListener('input', reanalyze);
+$('minms').addEventListener('input', reanalyze);
 
 facts();
 redraw();
