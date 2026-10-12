@@ -208,7 +208,6 @@ function analyze() {
     $('scroll').scrollLeft = Math.max(0, xOf(mid + shift()) - $('scroll').clientWidth / 2);
     redraw();
   }
-  setBase(baseFor(notes));
   $('play').disabled = !notes.length;
   $('midi').disabled = !notes.length;
   $('time').textContent = '0:00 / ' + fmt(duration);
@@ -230,6 +229,7 @@ async function loadAudio(data, name) {
     // deja pintar el estado antes de la parte pesada
     await new Promise(r => setTimeout(r, 30));
     analyze();
+    setBase(baseFor(state.notes));   // solo con un archivo nuevo, para no pisar la octava que elegiste
     if (buf.length > len) say($('msg').textContent + ' (solo los primeros ' + MAX_SECONDS / 60 + ' min)');
   } catch (e) {
     setStatus('sin audio', false);
