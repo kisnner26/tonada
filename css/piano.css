@@ -48,5 +48,5 @@
   box-shadow: 2px 3px 0 var(--ink-d);
 }
 /* la tecla blanca pulsada va rayada para no fundirse con las negras vecinas */
-.key.on.w { background: repeating-linear-gradient(135deg, var(--paper-l) 0 3px, var(--ink) 3px 5px); color: var(--ink); }
+.key.on.w { background: repeating-linear-gradient(135deg, var(--paper-l) 0 3px, var(--ink) 3px 5px); color: var(--ink); text-shadow: 0 0 3px var(--paper-l), 0 0 3px var(--paper-l), 0 0 3px var(--paper-l); }
 .key.on.b { background: var(--paper-l); }
