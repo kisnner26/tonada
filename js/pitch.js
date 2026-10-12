@@ -68,10 +68,17 @@ export function transcribe(samples, sr, options = {}) {
     if (rms[f] < floor) { f++; continue; }
     let g = f;
     while (g + 1 < frames && rms[g + 1] >= floor && midi[g + 1] === midi[f]) g++;
+    const next = g + 1;
+    // la ventana desborda los bordes de la nota: se recortan los cuadros con poca energía
+    let peak = 0;
+    for (let i = f; i <= g; i++) peak = Math.max(peak, rms[i]);
+    while (f < g && rms[f] < peak * 0.5) f++;
+    while (g > f && rms[g] < peak * 0.25) g--;
     if (g - f + 1 >= minFrames) {
-      notes.push({ m: midi[f], t: +((f * hop) / sr).toFixed(3), d: +(((g - f + 1) * hop) / sr).toFixed(3) });
+      const start = (f * hop + win / 2 - hop / 2) / sr;
+      notes.push({ m: midi[f], t: +Math.max(0, start).toFixed(3), d: +(((g - f + 1) * hop) / sr).toFixed(3) });
     }
-    f = g + 1;
+    f = next;
   }
   return { notes, duration: samples.length / sr };
 }
