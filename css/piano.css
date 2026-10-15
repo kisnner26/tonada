@@ -1,41 +1,44 @@
-/* teclado y rollo de notas, en la misma tinta riso */
-.facts { display: flex; flex-wrap: wrap; gap: 10px; min-height: 30px; }
+/* escenario: rollo de notas, teclado e inspector inferior */
+.facts { display: flex; flex-wrap: wrap; gap: 6px; min-height: 24px; }
 .fact {
   background: var(--paper-l);
   color: var(--ink);
-  border: 2px solid var(--ink);
-  padding: 7px 10px;
-  font: 500 0.68rem/1 var(--font-mono);
+  border: 1px solid var(--ink);
+  padding: 6px 8px;
+  font: 500 0.6rem/1 var(--font-mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 .fact.hot { background: var(--hot); color: var(--on-hot); }
-.fact.empty { background: transparent; border-color: transparent; color: var(--mute); padding-left: 0; letter-spacing: 0.06em; text-transform: none; font-size: 0.78rem; }
+.fact.empty { background: transparent; border-color: transparent; color: var(--mute); padding: 0; letter-spacing: 0.02em; text-transform: none; font-size: 0.68rem; line-height: 1.5; }
 
 .scroll {
-  overflow-x: auto;
-  border: 3px solid var(--ink);
+  flex: 1;
+  min-height: 0;
+  overflow: auto hidden;
   background-color: var(--paper-p);
   background-image: radial-gradient(circle at center, var(--dot-card) 1px, transparent 1.5px);
   background-size: 8px 8px;
-  scrollbar-color: var(--ink) var(--paper-p);
+  border-bottom: 1px solid var(--ink);
+  scrollbar-color: var(--ink) var(--well);
 }
+.scroll:focus-visible { outline-offset: -3px; box-shadow: none; }
 
-.stage { position: relative; --kw: 28px; }
+.stage { position: relative; --kw: 28px; min-height: 100%; display: flex; flex-direction: column; justify-content: flex-end; }
 .stage canvas { display: block; }
 
-.keys { position: relative; height: 160px; border-top: 3px solid var(--ink); }
+.keys { position: relative; height: 150px; border-top: 1px solid var(--ink); flex: none; }
 .key { position: absolute; top: 0; touch-action: manipulation; user-select: none; -webkit-user-select: none; cursor: pointer; }
 .key.w {
   width: var(--kw);
   height: 100%;
   background: var(--paper-l);
-  border-right: 2px solid var(--ink);
+  border-right: 1px solid var(--ink);
   display: flex;
   align-items: flex-end;
   justify-content: center;
   padding-bottom: 7px;
-  font: 600 0.58rem/1 var(--font-mono);
+  font: 600 0.56rem/1 var(--font-mono);
   color: var(--mute);
 }
 .key.b {
@@ -43,10 +46,10 @@
   height: 62%;
   z-index: 2;
   background: var(--ink);
-  border: 2px solid var(--ink-d);
+  border: 1px solid var(--ink-d);
   border-top: 0;
   /* el halo blanco separa la tecla negra de una blanca pintada de negro */
-  box-shadow: 0 0 0 2px var(--paper-l), 2px 3px 0 2px var(--ink-d);
+  box-shadow: 0 0 0 2px var(--paper-l);
 }
 /* la tecla blanca pulsada va rayada para no fundirse con las negras vecinas */
 .key.on.w { background: repeating-linear-gradient(135deg, var(--paper-l) 0 3px, var(--ink) 3px 5px); color: var(--ink); text-shadow: 0 0 3px var(--paper-l), 0 0 3px var(--paper-l), 0 0 3px var(--paper-l); }
@@ -57,29 +60,45 @@
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  font: 700 0.62rem/1 var(--font-mono);
+  font: 700 0.6rem/1 var(--font-mono);
   font-style: normal;
   pointer-events: none;
 }
-.key.w .hint { bottom: 26px; color: var(--ink); }
+.key.w .hint { bottom: 24px; color: var(--ink); }
 .key.b .hint { bottom: 8px; color: var(--paper-l); }
 .key.on.w .hint { background: var(--paper-l); padding: 1px 3px; }
 
-.keys-help { margin: 0; font: 500 0.72rem/1.9 var(--font-mono); letter-spacing: 0.04em; }
+/* inspector inferior */
+.dock { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); flex: none; background: var(--paper-l); }
+.dock .panel + .panel { border-left: 1px solid var(--ink); }
+.dock .pb { gap: 12px; padding-block: 12px 14px; }
+.dock .msg { min-height: 0; }
+
+.keys-help { margin: 0; font: 500 0.66rem/2.1 var(--font-mono); letter-spacing: 0.02em; }
 kbd {
   display: inline-block;
-  min-width: 1.7em;
-  padding: 2px 5px 3px;
+  min-width: 1.8em;
+  padding: 3px 4px 4px;
   margin-inline: 1px;
-  border: 2px solid var(--ink);
-  box-shadow: 2px 2px 0 var(--ink);
+  border: 1px solid var(--ink);
+  border-bottom-width: 2px;
   background: var(--paper-l);
-  font: 700 0.7rem/1 var(--font-mono);
+  font: 700 0.62rem/1 var(--font-mono);
   text-align: center;
 }
 
 /* tecla que toca el modo guiado: la blanca se pinta de negro y la negra queda en blanco con filo grueso */
 .key.target.w { background: var(--ink); color: var(--paper-l); }
 .key.target.w .hint { color: var(--paper-l); }
-.key.target.b { background: var(--paper-l); border: 3px solid var(--ink); box-shadow: inset 0 0 0 3px var(--paper-l), inset 0 0 0 6px var(--ink), 2px 3px 0 var(--ink-d); }
+.key.target.b { background: var(--paper-l); border: 2px solid var(--ink); box-shadow: inset 0 0 0 2px var(--paper-l), inset 0 0 0 4px var(--ink), 0 0 0 2px var(--paper-l); }
 .key.target.b .hint { color: var(--ink); }
+
+@media (max-width: 880px) {
+  .scroll { flex: none; }
+  .dock { grid-template-columns: 1fr; }
+  .dock .panel + .panel { border-left: 0; border-top: 1px solid var(--ink); }
+  .stagebar { padding: 10px 14px; }
+  .ctl-group { width: 100%; }
+  .field.inline { flex: 1 1 150px; flex-direction: column; align-items: stretch; }
+  select { width: 100%; }
+}

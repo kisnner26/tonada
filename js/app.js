@@ -97,7 +97,8 @@ function layoutStage() {
     $('stage').style.width = w + 'px';
   } else {
     $('keys').hidden = false;
-    canvas.height = 200;
+    // el rollo ocupa el alto que sobra del escenario
+    canvas.height = Math.max(200, Math.min(520, $('scroll').clientHeight - $('keys').offsetHeight - 1));
     kb.layout();
   }
 }
@@ -239,7 +240,7 @@ const player = createPlayer({
   onEnd: () => {
     cancelAnimationFrame(raf);
     kb.clear();
-    $('play').textContent = 'reproducir';
+    setPlaying(false);
     $('bar').style.width = '0';
     $('time').textContent = '0:00 / ' + fmt(state.duration);
     redraw();
@@ -263,11 +264,17 @@ function frame() {
   raf = requestAnimationFrame(frame);
 }
 
+function setPlaying(on) {
+  $('playLabel').textContent = on ? 'detener' : 'reproducir';
+  $('play').classList.toggle('on', on);
+  $('play').setAttribute('aria-label', on ? 'detener' : 'reproducir');
+}
+
 function togglePlay() {
   if (player.isPlaying()) return player.stop();
   if (!state.notes.length) return;
   player.start(state.notes, state.duration, { rate: +$('rate').value, shift: shift(), timbre: $('timbre').value });
-  $('play').textContent = 'detener';
+  setPlaying(true);
   follow = $('scroll').scrollLeft;
   frame();
 }

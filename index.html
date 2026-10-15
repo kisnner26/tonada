@@ -15,96 +15,122 @@
 </head>
 <body>
 <header class="top">
-  <div class="logo">TONADA<i></i></div>
+  <div class="brand"><span class="logo">TONADA<i></i></span><span class="ver">v0.1</span></div>
+
+  <div class="transport" role="group" aria-label="transporte">
+    <button class="tbtn play" id="play" type="button" disabled aria-label="reproducir"><svg class="ico-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg><svg class="ico-stop" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="3.5" width="9" height="9"/></svg><span id="playLabel">reproducir</span></button>
+    <div class="lcd" aria-live="off"><span class="lcd-k">tiempo</span><span class="time" id="time">0:00 / 0:00</span></div>
+    <div class="progress" aria-hidden="true"><div class="track"><i id="bar"></i></div></div>
+  </div>
+
   <div class="status" id="status"><i class="dot"></i><span id="statusText">sin audio</span></div>
 </header>
 
-<main>
-  <section class="hero">
-    <p class="tag">audio a piano en el navegador</p>
-    <h1><span class="l1">cada nota</span><span class="l2">tiene su <b>tecla</b></span></h1>
-    <p class="lede">suelta un audio o un video. tonada busca el tono dominante en cada instante, lo convierte en notas y las toca en el piano. nada sale de tu equipo.</p>
-  </section>
-
-  <section class="card drop" id="drop">
-    <h2><span class="num">01</span>archivo</h2>
-    <p class="drop-text">arrastra aquí un audio o un video, o elígelo.</p>
-    <div class="row">
-      <button class="btn hot" id="pick" type="button">elegir archivo</button>
-      <button class="btn" id="sample" type="button">probar con el ejemplo</button>
-    </div>
-    <input id="file" type="file" accept="audio/*,video/*" hidden>
-    <p class="msg" id="msg" role="status"></p>
-  </section>
-
-  <section class="card controls">
-    <h2><span class="num">02</span>reproducción</h2>
-    <div class="transport">
-      <button class="btn hot big" id="play" type="button" disabled>reproducir</button>
-      <span class="time" id="time">0:00 / 0:00</span>
-    </div>
-    <div class="track"><i id="bar"></i></div>
-    <div class="grid">
-      <label class="field" for="timbre">timbre
-        <select id="timbre"></select>
-      </label>
-      <label class="field" for="rate">velocidad
-        <select id="rate">
-          <option value="1" selected>1x</option><option value="0.75">0.75x</option><option value="0.5">0.5x</option>
-        </select>
-      </label>
-      <label class="field" for="oct">octava
-        <select id="oct">
-          <option value="0" selected>original</option><option value="-1">una abajo</option><option value="-2">dos abajo</option>
-        </select>
-      </label>
-    </div>
-    <div class="grid">
-      <label class="field" for="gate">sensibilidad <output id="gateOut">2%</output>
-        <input id="gate" type="range" min="1" max="30" step="1" value="2">
-      </label>
-      <label class="field" for="minms">nota mínima <output id="minmsOut">90 ms</output>
-        <input id="minms" type="range" min="30" max="400" step="10" value="90">
-      </label>
-    </div>
-    <div class="guide">
-      <div class="row">
-        <button class="btn" id="guideBtn" type="button" aria-pressed="false" disabled>modo guiado: no</button>
-        <label class="check" for="anykey"><input id="anykey" type="checkbox"><span class="box" aria-hidden="true"></span>cualquier tecla toca la nota</label>
-        <button class="btn" id="guideReset" type="button" disabled>reiniciar</button>
+<div class="workspace">
+  <aside class="side" aria-label="fuente y análisis">
+    <section class="panel drop" id="drop">
+      <h2 class="ph"><span>fuente</span><em>01</em></h2>
+      <div class="pb">
+        <div class="dropzone">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5l5 5M4 15v4h16v-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+          <p class="drop-text">arrastra un audio o un video</p>
+        </div>
+        <div class="stack">
+          <button class="btn hot" id="pick" type="button">elegir archivo</button>
+          <button class="btn" id="sample" type="button">cargar ejemplo</button>
+        </div>
+        <input id="file" type="file" accept="audio/*,video/*" hidden>
+        <p class="msg" id="msg" role="status"></p>
       </div>
-      <p class="msg">en el modo guiado la nota que toca ahora se pinta de negro y la melodía espera a que la toques, en orden, de principio a fin. vale la misma nota en cualquier octava.</p>
-      <p class="guide-info" id="guideInfo" role="status" hidden>
-        <span class="fact hot" id="guideCount">0 / 0</span>
-        <span id="guideHint"></span>
-      </p>
-    </div>
-  </section>
+    </section>
 
-  <section class="card piano">
-    <h2><span class="num">03</span><span id="viewTitle">piano</span></h2>
-    <div class="facts" id="facts"></div>
+    <section class="panel">
+      <h2 class="ph"><span>análisis</span><em>02</em></h2>
+      <div class="pb">
+        <label class="field" for="gate"><span class="fl">sensibilidad <output id="gateOut">2%</output></span>
+          <input id="gate" type="range" min="1" max="30" step="1" value="2">
+        </label>
+        <label class="field" for="minms"><span class="fl">nota mínima <output id="minmsOut">90 ms</output></span>
+          <input id="minms" type="range" min="30" max="400" step="10" value="90">
+        </label>
+        <div class="facts" id="facts"></div>
+      </div>
+    </section>
+
+    <section class="panel grow">
+      <h2 class="ph"><span>exportar</span><em>03</em></h2>
+      <div class="pb">
+        <div class="stack">
+          <button class="btn" id="midi" type="button" disabled>descargar midi</button>
+          <button class="btn" id="midiIn" type="button">conectar teclado midi</button>
+        </div>
+        <p class="msg" id="midiMsg" role="status"></p>
+      </div>
+    </section>
+  </aside>
+
+  <main class="main">
+    <div class="stagebar">
+      <h2 class="inst"><span class="lab">instrumento</span><span id="viewTitle">piano</span></h2>
+      <div class="ctl-group">
+        <label class="field inline" for="timbre"><span class="fl">timbre</span>
+          <select id="timbre"></select>
+        </label>
+        <label class="field inline" for="rate"><span class="fl">velocidad</span>
+          <select id="rate">
+            <option value="1" selected>1x</option><option value="0.75">0.75x</option><option value="0.5">0.5x</option>
+          </select>
+        </label>
+        <label class="field inline" for="oct"><span class="fl">octava</span>
+          <select id="oct">
+            <option value="0" selected>original</option><option value="-1">una abajo</option><option value="-2">dos abajo</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
     <div class="scroll" id="scroll" tabindex="0" aria-label="instrumento, usa las flechas para desplazarte">
       <div class="stage" id="stage">
         <canvas id="roll" height="200"></canvas>
         <div class="keys" id="keys"></div>
       </div>
     </div>
-    <p class="keys-help">
-      teclado de la compu: <kbd>Z</kbd><kbd>X</kbd><kbd>C</kbd><kbd>V</kbd><kbd>B</kbd><kbd>N</kbd><kbd>M</kbd> son do re mi fa sol la si,
-      <kbd>S</kbd><kbd>D</kbd><kbd>G</kbd><kbd>H</kbd><kbd>J</kbd> las alteradas, y la fila de arriba <kbd>Q</kbd> a <kbd>P</kbd> sube una octava.
-      <kbd>←</kbd><kbd>→</kbd> cambian la octava (ahora desde <b id="baseNote">C4</b>) y <kbd>espacio</kbd> reproduce.
-    </p>
-    <div class="row">
-      <button class="btn" id="midi" type="button" disabled>descargar midi</button>
-      <button class="btn" id="midiIn" type="button">conectar teclado midi</button>
+
+    <div class="dock">
+      <section class="panel guide">
+        <h2 class="ph"><span>modo guiado</span><em>04</em></h2>
+        <div class="pb">
+          <div class="row">
+            <button class="btn" id="guideBtn" type="button" aria-pressed="false" disabled>modo guiado: no</button>
+            <label class="check" for="anykey"><input id="anykey" type="checkbox"><span class="box" aria-hidden="true"></span>cualquier tecla toca la nota</label>
+            <button class="btn" id="guideReset" type="button" disabled>reiniciar</button>
+          </div>
+          <p class="guide-info" id="guideInfo" role="status" hidden>
+            <span class="fact hot" id="guideCount">0 / 0</span>
+            <span id="guideHint"></span>
+          </p>
+          <p class="msg">la nota que toca se pinta de negro y la melodía espera a que la toques, en orden. vale la misma nota en cualquier octava.</p>
+        </div>
+      </section>
+
+      <section class="panel keysref">
+        <h2 class="ph"><span>teclado de la compu</span><em>desde <b id="baseNote">C4</b></em></h2>
+        <div class="pb">
+          <p class="keys-help">
+            <kbd>Z</kbd><kbd>X</kbd><kbd>C</kbd><kbd>V</kbd><kbd>B</kbd><kbd>N</kbd><kbd>M</kbd> do re mi fa sol la si ·
+            <kbd>S</kbd><kbd>D</kbd><kbd>G</kbd><kbd>H</kbd><kbd>J</kbd> alteradas ·
+            <kbd>Q</kbd>–<kbd>P</kbd> una octava arriba<br>
+            <kbd>←</kbd><kbd>→</kbd> cambian la octava · <kbd>espacio</kbd> reproduce
+          </p>
+        </div>
+      </section>
     </div>
-    <p class="msg" id="midiMsg" role="status"></p>
-  </section>
-</main>
+  </main>
+</div>
 
 <footer class="foot">
   <span>tonada · mit</span>
+  <span class="sub">audio a piano en el navegador · nada sale de tu equipo</span>
   <a href="https://github.com/kisnner26/tonada">github.com/kisnner26/tonada</a>
 </footer>
 
