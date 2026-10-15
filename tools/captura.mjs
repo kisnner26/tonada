@@ -8,7 +8,7 @@ import { join } from 'node:path';
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const BASE = process.argv[2] || 'http://localhost:8080/';
 const OUT = new URL('../docs/img/', import.meta.url).pathname;
-const PORT = 9333;
+const PORT = 9300 + Math.floor(Math.random() * 400);   // puerto libre al azar: un chrome olvidado de otra corrida no se cuela
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 mkdirSync(OUT, { recursive: true });
@@ -36,6 +36,9 @@ const waiting = new Map();
 ws.onmessage = e => {
   const m = JSON.parse(e.data);
   if (m.id && waiting.has(m.id)) { waiting.get(m.id)(m); waiting.delete(m.id); }
+  // los errores de la página se muestran, para entender por qué no arranca
+  if (m.method === 'Runtime.exceptionThrown') console.error('página:', m.params.exceptionDetails.exception?.description || m.params.exceptionDetails.text);
+  if (m.method === 'Runtime.consoleAPICalled' && m.params.type === 'error') console.error('consola:', m.params.args.map(a => a.value || a.description).join(' '));
 };
 const send = (method, params = {}) => new Promise(res => { waiting.set(++id, res); ws.send(JSON.stringify({ id, method, params })); });
 const run = async js => (await send('Runtime.evaluate', { expression: js, awaitPromise: true, returnByValue: true })).result.result.value;
@@ -45,6 +48,10 @@ const save = async (name, params) => {
   writeFileSync(OUT + name, Buffer.from(r.result.data, 'base64'));
   console.log('guardada', name);
 };
+
+await send('Runtime.enable');
+await send('Network.enable');
+await send('Network.setCacheDisabled', { cacheDisabled: true });   // siempre los archivos actuales
 
 async function open(width, height, mobile) {
   await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 2, mobile });
@@ -58,7 +65,7 @@ async function open(width, height, mobile) {
       await sleep(250);
     }
   }
-  throw new Error('la página no cargó el ejemplo');
+  throw new Error('la página no cargó el ejemplo: ' + (await run("JSON.stringify({ msg: document.getElementById('msg')?.textContent, estado: document.getElementById('statusText')?.textContent, teclas: document.getElementById('keys')?.children.length })")));
 }
 
 async function pageSize() {
@@ -68,36 +75,36 @@ async function rect(sel) {
   return run(`(() => { const r = document.querySelector('${sel}').getBoundingClientRect(); return { x: r.x + scrollX, y: r.y + scrollY, width: r.width, height: r.height }; })()`);
 }
 
+async function main() {
 // escritorio: la página entera y el piano mientras suena
-await open(1100, 900, false);
+await open(1440, 900, false);
 const { h } = await pageSize();
-await send('Emulation.setDeviceMetricsOverride', { width: 1100, height: h, deviceScaleFactor: 2, mobile: false });
+await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: h, deviceScaleFactor: 2, mobile: false });
 await sleep(300);
 await save('escritorio.png', {});
 await run("document.getElementById('play').click()");
 await sleep(3700);
-await save('piano.png', { clip: { ...(await rect('.card.piano')), scale: 1 } });
+await save('piano.png', { clip: { ...(await rect('.main')), scale: 1 } });
 
 // modo guiado: la nota esperada pintada de negro, después de acertar las primeras
 const tecla = code => run(`window.dispatchEvent(new KeyboardEvent('keydown', { code: '${code}', bubbles: true }))`);
-await run("document.getElementById('play').textContent === 'detener' && document.getElementById('play').click()");
+await run("document.getElementById('play').classList.contains('on') && document.getElementById('play').click()");
 await sleep(300);
 await run("document.getElementById('guideBtn').click()");
 for (const c of ['KeyC', 'KeyC', 'KeyV']) { await tecla(c); await sleep(250); }
 await sleep(900);
-const a1 = await rect('.guide'), a2 = await rect('.card.piano');
-await save('guiado.png', { clip: { x: a2.x, y: a1.y, width: a2.width, height: a2.y + a2.height - a1.y, scale: 1 } });
+await save('guiado.png', { clip: { ...(await rect('.main')), scale: 1 } });
 await run("document.getElementById('guideBtn').click()");
 
 // un cuadro por instrumento con vista propia, mientras suena
-await send('Emulation.setDeviceMetricsOverride', { width: 1100, height: 2600, deviceScaleFactor: 2, mobile: false });
-await run("document.getElementById('play').textContent === 'detener' && document.getElementById('play').click()");
+await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 2, mobile: false });
+await run("document.getElementById('play').classList.contains('on') && document.getElementById('play').click()");
 for (const id of ['guitarra', 'cuerdas', 'marimba', 'campanas', 'caja', 'juguete', 'flauta']) {
   await run(`(() => { const s = document.getElementById('timbre'); s.value = '${id}'; s.dispatchEvent(new Event('change')); })()`);
   await sleep(300);
   await run("document.getElementById('play').click()");
   await sleep(3200);
-  await save(`instrumento-${id}.png`, { clip: { ...(await rect('.card.piano')), scale: 1 } });
+  await save(`instrumento-${id}.png`, { clip: { ...(await rect('.main')), scale: 1 } });
   await run("document.getElementById('play').click()");
   await sleep(200);
 }
@@ -110,5 +117,11 @@ await sleep(300);
 console.log('móvil: ancho de la página', m.w, 'de 390');
 await save('movil.png', {});
 
-ws.close();
-chrome.kill();
+}
+
+try {
+  await main();
+} finally {
+  ws.close();
+  chrome.kill();
+}
